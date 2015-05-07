@@ -2593,7 +2593,7 @@ void xloadcols(void) {
         color.blue = sixd_to_16bit(((i - 16) / 1) % 6);
         if (!XftColorAllocValue(xw.dpy, xw.vis, xw.cmap, &color, &dc.col[i]))
             die("Could not allocate color %d\n", i);
-        printf("%i -> [%x %x %x]\n", i, color.red, color.green, color.blue);
+        /* printf("%i -> [%x %x %x]\n", i, color.red, color.green, color.blue); */
     }
 
     /* load colors [232-255] ; grayscale */
@@ -2669,6 +2669,8 @@ void xclear(int x1, int y1, int x2, int y2) {
 
 void xhints(void) {
     XClassHint class = {opt_class ? opt_class : termname, termname};
+    /* class.res_name = opt_class; */
+    class.res_class = opt_class;
     XWMHints wm = {.flags = InputHint, .input = 1};
     XSizeHints *sizeh = NULL;
 
@@ -3003,7 +3005,8 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
          * to bright system colors [8-15]
          */
         if (BETWEEN(base.fg, 0, 7) && !(base.mode & ATTR_FAINT))
-            fg = &dc.col[base.fg];
+            if (!VIM_VERSION)
+                fg = &dc.col[base.fg + 8];
         if (base.mode & ATTR_ITALIC) {
             font = &dc.ibfont;
             frcflags = FRC_ITALICBOLD;
@@ -3628,6 +3631,9 @@ int main(int argc, char *argv[]) {
 run:
     setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
+#ifdef VIM_VERSION
+    setenv("ST_TERM","TRUE",1);
+#endif
     tnew(cols ? cols : 1, rows ? rows : 1);
     xinit();
     selinit();
