@@ -5,9 +5,15 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char font[] = "Fixed:pixelsize=13:style=SemiCondensed";
-static int borderpx = 2;
-static char shell[] = "/bin/sh";
+
+#define VIM_VERSION 1
+#ifdef VIM_VERSION
+    static char font[] = "PragmataPro for Powerline:size=15";
+#else
+    static char font[] = "PragmataPro for Powerline:size=17";
+#endif
+static int borderpx = 0;
+static char shell[] = "/bin/zsh";
 static char *utmp = NULL;
 
 /* identification sequence returned in DA and DECID */
@@ -32,8 +38,8 @@ static unsigned int tripleclicktimeout = 600;
 static bool allowaltscreen = true;
 
 /* frames per second st should at maximum draw to the screen */
-static unsigned int xfps = 120;
-static unsigned int actionfps = 30;
+static unsigned int xfps = 240;
+static unsigned int actionfps = 60;
 
 /*
  * blinking timeout (set to 0 to disable blinking) for the terminal blinking
@@ -52,33 +58,64 @@ static char termname[] = "st-256color";
 
 static unsigned int tabspaces = 8;
 
-
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 	/* 8 normal colors */
-	"black",
-	"red3",
-	"green3",
-	"yellow3",
-	"blue2",
-	"magenta3",
-	"cyan3",
-	"gray90",
+	"#121212",
+	"#8a2f58",
+	"#287373",
+	"#914e89",
+	"#395573",
+	"#5e468c",
+	"#2b7694",
+	"#899ca1",
 
 	/* 8 bright colors */
-	"gray50",
-	"red",
-	"green",
-	"yellow",
-	"#5c5cff",
-	"magenta",
-	"cyan",
-	"white",
+	"#3d3d3d",
+	"#a44fcf",
+	"#53a6a6",
+	"#bf85cc",
+	"#4779b3",
+	"#7f62b3",
+	"#47959e",
+	"#c0c0c0",
+
+
+    [17] = "#002b36",
+    [18] = "#073642",
+    [22] = "#2b768d",
+    [32] = "#002b36",
+    [62] = "#002B36",
+    [64] = "#003623",
+    [77] = "#2e8b57",
+    [89] = "#232030",
+    [124] = "#920000",
+    [125] = "#680020",
+    [126] = "#780000",
+    [127] = "#5f0000",
+    [162] = "#cc6666",
+    [164] = "#4F4C75",
+    [230] = "#eee8d5",
+    [231] = "#fdfdfd",
+    [232] = "#262626",
+    [233] = "#040404",
+    [234] = "#080808",
+    [239] = "#121212",
+    [240] = "#151515",
+    [244] = "#586e75",
+    [235] = "#373b41",
+    [250] = "#666666",
+    [251] = "#afa0f0",
+    [253] = "#c5c8c6",
+    [215] = "#184454",
+    [200] = "#315C70",
 
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	"#cccccc",
+	"#666666",
+	"#000000",
+    "#5E468C",
 };
 
 
@@ -86,9 +123,9 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor
  */
-static unsigned int defaultfg = 7;
-static unsigned int defaultbg = 0;
-static unsigned int defaultcs = 256;
+static unsigned int defaultfg = 256;
+static unsigned int defaultbg = 257;
+static unsigned int defaultcs = 258;
 
 /*
  * Colors used, when the specific fg == defaultfg. So in reverse mode this
