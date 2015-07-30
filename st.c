@@ -442,7 +442,7 @@ static inline bool selected(int, int);
 static char *getsel(void);
 static void selcopy(Time);
 static void selscroll(int, int);
-static void selsnap(int, int *, int *, int);
+static void selsnap(int *, int *, int);
 static int x2col(int);
 static int y2row(int);
 static void getbuttoninfo(XEvent *);
@@ -645,8 +645,8 @@ void selnormalize(void) {
     sel.nb.y = MIN(sel.ob.y, sel.oe.y);
     sel.ne.y = MAX(sel.ob.y, sel.oe.y);
 
-    selsnap(sel.snap, &sel.nb.x, &sel.nb.y, -1);
-    selsnap(sel.snap, &sel.ne.x, &sel.ne.y, +1);
+	selsnap(&sel.nb.x, &sel.nb.y, -1);
+	selsnap(&sel.ne.x, &sel.ne.y, +1);
 
     /* expand selection over line breaks */
     if (sel.type == SEL_RECTANGULAR) return;
@@ -663,12 +663,12 @@ bool selected(int x, int y) {
            (y != sel.ne.y || x <= sel.ne.x);
 }
 
-void selsnap(int mode, int *x, int *y, int direction) {
+void selsnap(int *x, int *y, int direction) {
     int newx, newy, xt, yt;
     bool delim, prevdelim;
     Glyph *gp, *prevgp;
 
-    switch (mode) {
+    switch(sel.snap) {
         case SNAP_WORD:
             /*
              * Snap around if the word wraps around at the end or
