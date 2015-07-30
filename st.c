@@ -2515,7 +2515,7 @@ void tputc(long u) {
     } else if (term.esc & ESC_START) {
         if (term.esc & ESC_CSI) {
 			csiescseq.buf[csiescseq.len++] = u;
-			if(BETWEEN(u, 0x40, 0x7E)
+			if(BETWEEN(u, 0x40, 0x7E) ||
                 csiescseq.len >= sizeof(csiescseq.buf) - 1) {
                 term.esc = 0;
                 csiparse();
