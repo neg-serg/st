@@ -184,14 +184,14 @@ typedef struct {
 } TCursor;
 
 /* CSI Escape sequence structs */
-/* ESC '[' [[ [<priv>] <arg> [;]] <mode>] */
+/* ESC '[' [[ [<priv>] <arg> [;]] <mode> [<mode>]] */
 typedef struct {
     char buf[ESC_BUF_SIZ]; /* raw string */
     int len;               /* raw string length */
     char priv;
     int arg[ESC_ARG_SIZ];
     int narg; /* nb of args */
-    char mode;
+    char mode[2];
 } CSIEscape;
 
 /* STR Escape sequence structs */
@@ -244,6 +244,7 @@ typedef struct {
     int ch;       /* char height */
     int cw;       /* char width  */
     char state;   /* focus, redraw, visible */
+    int cursor;   /* cursor style */
 } XWindow;
 
 typedef struct {
@@ -1412,7 +1413,8 @@ void csiparse(void) {
         if (*p != ';' || csiescseq.narg == ESC_ARG_SIZ) break;
         p++;
     }
-    csiescseq.mode = *p;
+	csiescseq.mode[0] = *p++;
+	csiescseq.mode[1] = (p < csiescseq.buf+csiescseq.len) ? *p : '\0';
 }
 
 /* for absolute user moves, when decom is set */
@@ -1818,7 +1820,7 @@ void csihandle(void) {
     char buf[40];
     int len;
 
-    switch (csiescseq.mode) {
+	switch(csiescseq.mode[0]) {
         default:
         unknown:
             fprintf(stderr, "erresc: unknown csi ");
@@ -2004,6 +2006,19 @@ void csihandle(void) {
         case 'u': /* DECRC -- Restore cursor position (ANSI.SYS) */
             tcursor(CURSOR_LOAD);
             break;
+        case ' ':
+            switch (csiescseq.mode[1]) {
+                case 'q': /* DECSCUSR -- Set Cursor Style */
+                    DEFAULT(csiescseq.arg[0], 1);
+                    if (!BETWEEN(csiescseq.arg[0], 0, 6)) {
+                        goto unknown;
+                    }
+                    xw.cursor = csiescseq.arg[0];
+                break;
+                default:
+                    goto unknown;
+            }
+        break;
     }
 }
 
@@ -3267,15 +3282,36 @@ void xdrawcursor(void) {
 
     /* draw the new one */
     if (xw.state & WIN_FOCUSED) {
-        if (IS_SET(MODE_REVERSE)) {
-            g.mode |= ATTR_REVERSE;
-            g.fg = defaultcs;
-            g.bg = defaultfg;
-        }
+		switch (xw.cursor) {
+			case 0: /* Blinking Block */
+			case 1: /* Blinking Block (Default) */
+			case 2: /* Steady Block */
+				if(IS_SET(MODE_REVERSE)) {
+						g.mode |= ATTR_REVERSE;
+						g.fg = defaultcs;
+						g.bg = defaultfg;
+					}
 
-        sl = utf8len(g.c);
-        width = (term.line[term.c.y][curx].mode & ATTR_WIDE) ? 2 : 1;
-        xdraws(g.c, g, term.c.x, term.c.y, width, sl);
+				sl = utf8len(g.c);
+				width = (term.line[term.c.y][curx].mode & ATTR_WIDE)\
+					? 2 : 1;
+				xdraws(g.c, g, term.c.x, term.c.y, width, sl);
+				break;
+			case 3: /* Blinking Underline */
+			case 4: /* Steady Underline */
+				XftDrawRect(xw.draw, &dc.col[defaultcs],
+						borderpx + curx * xw.cw,
+						borderpx + (term.c.y + 1) * xw.ch - 1,
+						xw.cw, 1);
+				break;
+			case 5: /* Blinking bar */
+			case 6: /* Steady bar */
+				XftDrawRect(xw.draw, &dc.col[defaultcs],
+								borderpx + curx * xw.cw,
+								borderpx + term.c.y * xw.ch,
+								1, xw.ch);
+				break;
+		}
     } else {
         XftDrawRect(xw.draw, &dc.col[defaultcs], borderpx + curx * xw.cw,
                     borderpx + term.c.y * xw.ch, xw.cw - 1, 1);
@@ -3689,6 +3725,7 @@ int main(int argc, char *argv[]) {
 
     xw.l = xw.t = 0;
     xw.isfixed = False;
+    xw.cursor = 0;
 
     ARGBEGIN {
         case 'a':
