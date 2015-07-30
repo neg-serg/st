@@ -2190,7 +2190,7 @@ void tputtab(int n) {
         while (x > 0 && n++)
             for (--x; x > 0 && !term.tabs[x]; --x) /* nothing */;
     }
-    tmoveto(x, term.c.y);
+    term.c.x = LIMIT(x, 0, term.col-1);
 }
 
 void techo(char *buf, int len) {
