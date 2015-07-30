@@ -712,14 +712,14 @@ void selsnap(int *x, int *y, int direction) {
              * previous line will be selected.
              */
             *x = (direction < 0) ? 0 : term.col - 1;
-            if (direction < 0 && *y > 0) {
+            if(direction < 0) {
                 for (; *y > 0; *y += direction) {
                     if (!(term.line[*y - 1][term.col - 1].mode & ATTR_WRAP)) {
                         break;
                     }
                 }
-            } else if (direction > 0 && *y < term.row - 1) {
-                for (; *y < term.row; *y += direction) {
+            } else if(direction > 0) {
+                for(; *y < term.row-1; *y += direction) {
                     if (!(term.line[*y][term.col - 1].mode & ATTR_WRAP)) {
                         break;
                     }
