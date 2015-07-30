@@ -340,6 +340,7 @@ static void draw(void);
 static void redraw(void);
 static void drawregion(int, int, int, int);
 static void execsh(void);
+static void stty(void);
 static void sigchld(int);
 static void run(void);
 
@@ -490,6 +491,7 @@ static char *opt_title = NULL;
 static char *opt_embed = NULL;
 static char *opt_class = NULL;
 static char *opt_font = NULL;
+static char *opt_line = NULL;
 static int oldbutton = 3; /* button event on startup: 3 = release */
 
 static char *usedfont = NULL;
@@ -1148,9 +1150,51 @@ void sigchld(int a) {
     exit(EXIT_SUCCESS);
 }
 
+
+void stty(void) {
+	char cmd[_POSIX_ARG_MAX], **p, *q, *s;
+	size_t n, siz;
+
+	if((n = strlen(stty_args)) > sizeof(cmd)-1)
+		die("incorrect stty parameters\n");
+	memcpy(cmd, stty_args, n);
+	q = cmd + n;
+	siz = sizeof(cmd) - n;
+	for(p = opt_cmd; p && (s = *p); ++p) {
+		if((n = strlen(s)) > siz-1)
+			die("stty parameter length too long\n");
+		*q++ = ' ';
+		q = memcpy(q, s, n);
+		q += n;
+		siz-= n + 1;
+	}
+	*q = '\0';
+	system(cmd);
+}
+
 void ttynew(void) {
     int m, s;
     struct winsize w = {term.row, term.col, 0, 0};
+
+	if(opt_io) {
+		term.mode |= MODE_PRINT;
+		iofd = (!strcmp(opt_io, "-")) ?
+			  STDOUT_FILENO :
+			  open(opt_io, O_WRONLY | O_CREAT, 0666);
+		if(iofd < 0) {
+			fprintf(stderr, "Error opening %s:%s\n",
+				opt_io, strerror(errno));
+		}
+	}
+
+	if (opt_line) {
+		if((cmdfd = open(opt_line, O_RDWR)) < 0)
+			die("open line failed: %s\n", strerror(errno));
+		close(STDIN_FILENO);
+		dup(cmdfd);
+		stty();
+		return;
+	}
 
     /* seems to work fine on linux, openbsd and freebsd */
     if (openpty(&m, &s, NULL, NULL, &w) < 0)
@@ -1161,6 +1205,7 @@ void ttynew(void) {
             die("fork failed\n");
             break;
         case 0:
+            close(iofd);
             setsid(); /* create a new process group */
             dup2(s, STDIN_FILENO);
             dup2(s, STDOUT_FILENO);
@@ -1175,16 +1220,6 @@ void ttynew(void) {
             close(s);
             cmdfd = m;
             signal(SIGCHLD, sigchld);
-            if (opt_io) {
-                term.mode |= MODE_PRINT;
-                iofd = (!strcmp(opt_io, "-"))
-                           ? STDOUT_FILENO
-                           : open(opt_io, O_WRONLY | O_CREAT, 0666);
-                if (iofd < 0) {
-                    fprintf(stderr, "Error opening %s:%s\n", opt_io,
-                            strerror(errno));
-                }
-            }
             break;
     }
 }
@@ -3655,10 +3690,11 @@ void run(void) {
 }
 
 void usage(void) {
-    die("%s " VERSION
-        " (c) 2010-2015 st engineers\n"
+    die("%s " VERSION " (c) 2010-2015 st engineers\n"
         "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-        "          [-i] [-t title] [-w windowid] [-e command ...] [command ...]\n",
+	"          [-i] [-t title] [-w windowid] [-e command ...] [command ...]\n"
+	"       st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
+	"          [-i] [-t title] [-w windowid] [-l line] [stty_args ...]\n",
         argv0);
 }
 
@@ -3749,6 +3785,9 @@ int main(int argc, char *argv[]) {
             break;
         case 'o':
             opt_io = EARGF(usage());
+            break;
+        case 'l':
+            opt_line = EARGF(usage());
             break;
         case 't':
             opt_title = EARGF(usage());
