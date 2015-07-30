@@ -23,6 +23,9 @@ static char vtiden[] = "\033[?6c";
 static float cwscale = 1.0;
 static float chscale = 1.0;
 
+/* thickness of underline and bar cursors */
+static unsigned int cursorthickness = 2;
+
 /*
  * word delimiter string
  *
