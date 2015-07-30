@@ -1333,7 +1333,7 @@ void treset(void) {
     term.top = 0;
     term.bot = term.row - 1;
     term.mode = MODE_WRAP;
-    memset(term.trantbl, sizeof(term.trantbl), CS_USA);
+    memset(term.trantbl, CS_USA, sizeof(term.trantbl));
     term.charset = 0;
 
     for (i = 0; i < 2; i++) {
