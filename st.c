@@ -3127,7 +3127,7 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 				break;
 			/* We got a default font for a not found glyph. */
 			if(!charexists && frc[i].flags == frcflags \
-					&& unicodep == unicodep) {
+                    && frc[i].unicodep == unicodep) {
                 break;
             }
         }
@@ -3152,7 +3152,6 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
             FcPatternAddBool(fcpattern, FC_SCALABLE, FcTrue);
 
             FcConfigSubstitute(0, fcpattern, FcMatchPattern);
-            FcPatternPrint(fcpattern);
             FcDefaultSubstitute(fcpattern);
 
             fontpattern = FcFontSetMatch(0, fcsets, 1, fcpattern, &fcres);
