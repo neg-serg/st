@@ -3780,7 +3780,7 @@ run:
 #ifdef VIM_VERSION
     setenv("ST_TERM","TRUE",1);
 #endif
-    tnew(cols ? cols : 1, rows ? rows : 1);
+    tnew(MAX(cols, 1), MAX(rows, 1));
     xinit();
     selinit();
     run();
