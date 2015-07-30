@@ -903,7 +903,9 @@ char *getsel(void) {
     return str;
 }
 
-void selcopy(Time t) { xsetsel(getsel(), t);
+void selcopy(Time t) {
+    xsetsel(getsel(), t);
+}
 
 void selnotify(XEvent *e) {
     ulong nitems, ofs, rem;
@@ -2291,6 +2293,7 @@ void tstrsequence(uchar c) {
 	case 0x9d:   /* OSC -- Operating System Command */
 		c = ']';
 		break;
+	}
     strreset();
     strescseq.type = c;
     term.esc |= ESC_STR;
@@ -3678,7 +3681,7 @@ void run(void) {
 
 void usage(void) {
     die("%s " VERSION " (c) 2010-2015 st engineers\n"
-        "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
+    "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
 	"          [-i] [-t title] [-w windowid] [-e command ...] [command ...]\n"
 	"       st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
 	"          [-i] [-t title] [-w windowid] [-l line] [stty_args ...]\n",
@@ -3737,7 +3740,7 @@ copyurl(const Arg *arg) {
 		sel.ob.y = sel.oe.y = row;
 		selnormalize();
 		tsetdirt(sel.nb.y, sel.ne.y);
-		selcopy();
+		selcopy(0);
 	}
 
 	free(linestr);
