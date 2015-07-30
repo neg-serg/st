@@ -909,6 +909,8 @@ void selnotify(XEvent *e) {
 
     ofs = 0;
     xsev = (XSelectionEvent *)e;
+    if (xsev->property == None)
+        return;
     do {
 		if(XGetWindowProperty(xw.dpy, xw.win, xsev->property, ofs,
 					BUFSIZ/4, False, AnyPropertyType,
