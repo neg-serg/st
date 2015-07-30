@@ -3654,8 +3654,7 @@ void run(void) {
             dodraw = 1;
         }
         deltatime = TIMEDIFF(now, last);
-        if (deltatime > (xev ? (1000 / xfps) : (1000 / actionfps)) ||
-            deltatime < 0) {
+		if(deltatime > 1000 / (xev ? xfps : actionfps)) {
             dodraw = 1;
             last = now;
         }
