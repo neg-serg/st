@@ -167,11 +167,13 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned short ushort;
 
+typedef uint_least32_t Rune;
+
 typedef XftDraw *Draw;
 typedef XftColor Color;
 
 typedef struct {
-    long u;           /* character code */
+    Rune u;           /* character code */
     ushort mode;     /* attribute flags */
     ushort fg;     /* foreground  */
     ushort bg;     /* background  */
@@ -374,20 +376,20 @@ static void tmoveato(int, int);
 static void tnew(int, int);
 static void tnewline(int);
 static void tputtab(int);
-static void tputc(long);
+static void tputc(Rune);
 static void treset(void);
 static void tresize(int, int);
 static void tscrollup(int, int);
 static void tscrolldown(int, int);
 static void tsetattr(int *, int);
-static void tsetchar(long, Glyph *, int, int);
+static void tsetchar(Rune, Glyph *, int, int);
 static void tsetscroll(int, int);
 static void tswapscreen(void);
 static void tsetdirt(int, int);
 static void tsetdirtattr(int);
 static void tsetmode(bool, bool, int *, int);
 static void tfulldirt(void);
-static void techo(long);
+static void techo(Rune);
 static void tcontrolcode(uchar);
 static void tdectest(char);
 static int32_t tdefcolor(int *, int *, int);
@@ -450,11 +452,11 @@ static int y2row(int);
 static void getbuttoninfo(XEvent *);
 static void mousereport(XEvent *);
 
-static size_t utf8decode(char *, long *, size_t);
-static long utf8decodebyte(char, size_t *);
-static size_t utf8encode(long, char *);
-static char utf8encodebyte(long, size_t);
-static size_t utf8validate(long *, size_t);
+static size_t utf8decode(char *, Rune *, size_t);
+static Rune utf8decodebyte(char, size_t *);
+static size_t utf8encode(Rune, char *);
+static char utf8encodebyte(Rune, size_t);
+static size_t utf8validate(Rune *, size_t);
 
 static ssize_t xwrite(int, const char *, size_t);
 static void *xmalloc(size_t);
@@ -503,8 +505,8 @@ static double defaultfontsize = 0;
 
 static uchar utfbyte[UTF_SIZ + 1] = {0x80, 0, 0xC0, 0xE0, 0xF0};
 static uchar utfmask[UTF_SIZ + 1] = {0xC0, 0x80, 0xE0, 0xF0, 0xF8};
-static long utfmin[UTF_SIZ + 1] = {0, 0, 0x80, 0x800, 0x10000};
-static long utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
+static Rune utfmin[UTF_SIZ + 1] = {       0,    0,  0x80,  0x800,  0x10000};
+static Rune utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
 
 /* Font Ring Cache */
 enum { FRC_NORMAL, FRC_ITALIC, FRC_BOLD, FRC_ITALICBOLD };
@@ -512,7 +514,7 @@ enum { FRC_NORMAL, FRC_ITALIC, FRC_BOLD, FRC_ITALICBOLD };
 typedef struct {
     XftFont *font;
     int flags;
-    long unicodep;
+    Rune unicodep;
 } Fontcache;
 
 /* Fontcache is an array now. A new font will be appended to the array. */
@@ -551,7 +553,7 @@ char *xstrdup(char *s) {
     return s;
 }
 
-size_t utf8decode(char *c, long *u, size_t clen) {
+size_t utf8decode(char *c, Rune *u, size_t clen) {
     size_t i, j, len, type;
     long udecoded;
 
@@ -569,14 +571,14 @@ size_t utf8decode(char *c, long *u, size_t clen) {
     return len;
 }
 
-long utf8decodebyte(char c, size_t *i) {
+Rune utf8decodebyte(char c, size_t *i) {
     for (*i = 0; *i < LEN(utfmask); ++(*i))
         if (((uchar)c & utfmask[*i]) == utfbyte[*i])
             return (uchar)c & ~utfmask[*i];
     return 0;
 }
 
-size_t utf8encode(long u, char *c) {
+size_t utf8encode(Rune u, char *c) {
     size_t len, i;
 
     len = utf8validate(&u, 0);
@@ -591,7 +593,7 @@ size_t utf8encode(long u, char *c) {
 
 char utf8encodebyte(long u, size_t i) { return utfbyte[i] | (u & ~utfmask[i]); }
 
-size_t utf8validate(long *u, size_t i) {
+size_t utf8validate(Rune *u, size_t i) {
     if (!BETWEEN(*u, utfmin[i], utfmax[i]) || BETWEEN(*u, 0xD800, 0xDFFF))
         *u = UTF_INVALID;
     for (i = 1; *u > utfmax[i]; ++i)
@@ -1232,7 +1234,7 @@ void ttyread(void) {
     static int buflen = 0;
     char *ptr;
     int charsize; /* size of utf8 char in bytes */
-    long unicodep;
+    Rune unicodep;
     int ret;
 
     /* append read bytes to unprocessed bytes */
@@ -1259,7 +1261,7 @@ void ttywrite(const char *s, size_t n) {
 
 void ttysend(char *s, size_t n) {
 	int len;
-	long u;
+	Rune u;
     ttywrite(s, n);
     if (IS_SET(MODE_ECHO))
 		while((len = utf8decode(s, &u, n)) > 0) {
@@ -1487,7 +1489,7 @@ void tmoveto(int x, int y) {
 	term.c.y = LIMIT(y, miny, maxy);
 }
 
-void tsetchar(long u, Glyph *attr, int x, int y) {
+void tsetchar(Rune u, Glyph *attr, int x, int y) {
     static char *vt100_0[62] = {
         /* 0x41 - 0x7e */
         "↑", "↓", "→", "←", "█", "▚", "☃",      /* A - G */
@@ -2239,7 +2241,7 @@ void tputtab(int n) {
     term.c.x = LIMIT(x, 0, term.col-1);
 }
 
-void techo(long u) {
+void techo(Rune u) {
 	if(ISCONTROL(u)) { /* control code */
 		if(u & 0x80) {
 			u &= 0x7f;
@@ -2452,7 +2454,7 @@ int eschandle(uchar ascii) {
     return 1;
 }
 
-void tputc(long u) {
+void tputc(Rune u) {
 	char c[UTF_SIZ];
     uchar ascii;
     bool control;
@@ -3007,7 +3009,7 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 	int frcflags, charexists;
     int u8fl, u8fblen, u8cblen, doesexist;
     char *u8c, *u8fs;
-    long unicodep;
+    Rune unicodep;
     Font *font = &dc.font;
     FcResult fcres;
     FcPattern *fcpattern, *fontpattern;
@@ -3476,7 +3478,7 @@ void kpress(XEvent *ev) {
     KeySym ksym;
     char buf[32], *customkey;
     int len;
-    long c;
+    Rune c;
     Status status;
     Shortcut *bp;
 
