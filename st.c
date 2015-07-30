@@ -498,6 +498,7 @@ enum { FRC_NORMAL, FRC_ITALIC, FRC_BOLD, FRC_ITALICBOLD };
 typedef struct {
     XftFont *font;
     int flags;
+    long unicodep;
 } Fontcache;
 
 /* Fontcache is an array now. A new font will be appended to the array. */
@@ -2950,7 +2951,7 @@ void xinit(void) {
 void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
     int winx = borderpx + x * xw.cw, winy = borderpx + y * xw.ch,
         width = charlen * xw.cw, xp, i;
-    int frcflags;
+	int frcflags, charexists;
     int u8fl, u8fblen, u8cblen, doesexist;
     char *u8c, *u8fs;
     long unicodep;
@@ -3120,8 +3121,13 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 
         /* Search the font cache. */
         for (i = 0; i < frclen; i++) {
-            if (XftCharExists(xw.dpy, frc[i].font, unicodep) &&
-                frc[i].flags == frcflags) {
+			charexists = XftCharExists(xw.dpy, frc[i].font, unicodep);
+			/* Everything correct. */
+			if(charexists && frc[i].flags == frcflags)
+				break;
+			/* We got a default font for a not found glyph. */
+			if(!charexists && frc[i].flags == frcflags \
+					&& unicodep == unicodep) {
                 break;
             }
         }
@@ -3146,9 +3152,10 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
             FcPatternAddBool(fcpattern, FC_SCALABLE, FcTrue);
 
             FcConfigSubstitute(0, fcpattern, FcMatchPattern);
+            FcPatternPrint(fcpattern);
             FcDefaultSubstitute(fcpattern);
 
-            fontpattern = FcFontSetMatch(0, fcsets, FcTrue, fcpattern, &fcres);
+            fontpattern = FcFontSetMatch(0, fcsets, 1, fcpattern, &fcres);
 
             /*
              * Overwrite or create the new cache entry.
@@ -3156,10 +3163,12 @@ void xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
             if (frclen >= LEN(frc)) {
                 frclen = LEN(frc) - 1;
                 XftFontClose(xw.dpy, frc[frclen].font);
+                frc[frclen].unicodep = 0;
             }
 
             frc[frclen].font = XftFontOpenPattern(xw.dpy, fontpattern);
             frc[frclen].flags = frcflags;
+            frc[frclen].unicodep = unicodep;
 
             i = frclen;
             frclen++;
