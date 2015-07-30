@@ -3685,7 +3685,7 @@ copyurl(const Arg *arg) {
 	/* find the start of the last url before selection */
 	do {
 		for (i = 0; i < term.col; ++i)
-			linestr[i] = term.line[row][i].c[0];
+			linestr[i] = term.line[row][i].u;
 		linestr[term.col] = '\0';
 		if ((match = strstr(linestr, "http://"))
 				|| (match = strstr(linestr, "https://")))
