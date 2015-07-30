@@ -2450,7 +2450,7 @@ void tputc(char *c, int len) {
      * character.
      */
     if (term.esc & ESC_STR) {
-        if (width == 1 && (ascii == '\a' || ascii == 030 || ascii == 032 ||
+        if (len == 1 && (ascii == '\a' || ascii == 030 || ascii == 032 ||
                            ascii == 033 || ISCONTROLC1(unicodep))) {
             term.esc &= ~(ESC_START | ESC_STR);
             term.esc |= ESC_STR_END;
