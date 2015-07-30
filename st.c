@@ -864,7 +864,7 @@ char *getsel(void) {
     ptr = str = xmalloc(bufsize);
 
     /* append every set & selected glyph to the selection */
-    for (y = sel.nb.y; y < sel.ne.y + 1; y++) {
+	for(y = sel.nb.y; y <= sel.ne.y; y++) {
         linelen = tlinelen(y);
 
         if (sel.type == SEL_RECTANGULAR) {
