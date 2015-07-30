@@ -156,6 +156,8 @@ enum escape_state {
 
 enum window_state { WIN_VISIBLE = 1, WIN_FOCUSED = 2 };
 
+enum selection_mode { SEL_IDLE = 0, SEL_EMPTY = 1, SEL_READY = 2 };
+
 enum selection_type { SEL_REGULAR = 1, SEL_RECTANGULAR = 2 };
 
 enum selection_snap { SNAP_WORD = 1, SNAP_LINE = 2 };
@@ -600,7 +602,7 @@ size_t utf8validate(long *u, size_t i) {
 void selinit(void) {
     memset(&sel.tclick1, 0, sizeof(sel.tclick1));
     memset(&sel.tclick2, 0, sizeof(sel.tclick2));
-    sel.mode = 0;
+    sel.mode = SEL_IDLE;
     sel.ob.x = -1;
 	sel.primary = NULL;
 	sel.clipboard = NULL;
@@ -822,7 +824,7 @@ void bpress(XEvent *e) {
 
         /* Clear previous selection, logically and visually. */
         selclear(NULL);
-        sel.mode = 1;
+        sel.mode = SEL_EMPTY;
         sel.type = SEL_REGULAR;
         sel.oe.x = sel.ob.x = x2col(e->xbutton.x);
         sel.oe.y = sel.ob.y = y2row(e->xbutton.y);
@@ -845,7 +847,7 @@ void bpress(XEvent *e) {
          * make clicks visible
          */
         if (sel.snap != 0) {
-            sel.mode++;
+            sel.mode = SEL_READY;
             tsetdirt(sel.nb.y, sel.ne.y);
         }
         sel.tclick2 = sel.tclick1;
@@ -1048,12 +1050,12 @@ void brelease(XEvent *e) {
     if (e->xbutton.button == Button2) {
         selpaste(NULL);
     } else if (e->xbutton.button == Button1) {
-        if (sel.mode < 2) {
-            selclear(NULL);
-        } else {
+		if(sel.mode == SEL_READY) {
             getbuttoninfo(e);
             selcopy(e->xbutton.time);
-        }
+		} else
+			selclear(NULL);
+		sel.mode = SEL_IDLE;
         sel.mode = 0;
         tsetdirt(sel.nb.y, sel.ne.y);
     }
@@ -1069,7 +1071,7 @@ void bmotion(XEvent *e) {
 
     if (!sel.mode) return;
 
-    sel.mode++;
+    sel.mode = SEL_READY;
     oldey = sel.oe.y;
     oldex = sel.oe.x;
     oldsby = sel.nb.y;
