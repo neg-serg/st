@@ -1171,7 +1171,8 @@ void stty(void) {
 		siz-= n + 1;
 	}
 	*q = '\0';
-	system(cmd);
+	if (system(cmd) != 0)
+	    perror("Couldn't call stty");
 }
 
 void ttynew(void) {
