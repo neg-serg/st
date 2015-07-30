@@ -3655,7 +3655,7 @@ void usage(void) {
     die("%s " VERSION
         " (c) 2010-2015 st engineers\n"
         "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-        "          [-i] [-t title] [-w windowid] [-e command ...]\n",
+        "          [-i] [-t title] [-w windowid] [-e command ...] [command ...]\n",
         argv0);
 }
 
@@ -3732,12 +3732,8 @@ int main(int argc, char *argv[]) {
             opt_class = EARGF(usage());
             break;
         case 'e':
-            /* eat all remaining arguments */
-            if (argc > 1) {
-                opt_cmd = &argv[1];
-			if(argv[1] != NULL && opt_title == NULL)
-				opt_title = basename(xstrdup(argv[1]));
-            }
+            if(argc > 1)
+                --argc, ++argv;
             goto run;
         case 'f':
             opt_font = EARGF(usage());
@@ -3764,6 +3760,12 @@ int main(int argc, char *argv[]) {
     ARGEND;
 
 run:
+	if(argc > 0) {
+		/* eat all remaining arguments */
+		opt_cmd = argv;
+		if(!opt_title)
+			opt_title = basename(xstrdup(argv[0]));
+	}
     setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
 #ifdef VIM_VERSION
