@@ -2094,8 +2094,7 @@ void strhandle(void) {
 
     term.esc &= ~(ESC_STR_END | ESC_STR);
     strparse();
-    narg = strescseq.narg;
-    par = atoi(strescseq.args[0]);
+    par = (narg = strescseq.narg) ? atoi(strescseq.args[0]) : 0;
 
     switch (strescseq.type) {
         case ']': /* OSC -- Operating System Command */
