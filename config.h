@@ -7,6 +7,7 @@
  */
 
 #define VIM_VERSION 1
+#define ST_BRIGHT 1
 #ifdef VIM_VERSION
     static char font[] = "PragmataPro for Powerline:size=15";
 #else
@@ -83,7 +84,7 @@ static const char *colorname[] = {
 	"#7f62b3",
 	"#47959e",
 	"#c0c0c0",
-#ifdef VIM_VERSION
+// #ifdef VIM_VERSION
     [17] = "#002b36",
     [18] = "#073642",
     [22] = "#2b768d",
@@ -126,7 +127,7 @@ static const char *colorname[] = {
     // -- powerline_git_more_dark(223) = #091f2c
     // -- powerline_main(224)          = #10151b
     // -- powerline_main_fg(225)       = #25535f
-#endif
+// #endif
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
