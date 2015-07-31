@@ -870,12 +870,11 @@ void bpress(XEvent *e) {
         }
         selnormalize();
 
-        if (sel.snap != 0) {
+        if (sel.snap != 0)
                 sel.mode = SEL_READY;
-            tsetdirt(sel.nb.y, sel.ne.y);
-            sel.tclick2 = sel.tclick1;
-            sel.tclick1 = now;
-        }
+        tsetdirt(sel.nb.y, sel.ne.y);
+        sel.tclick2 = sel.tclick1;
+        sel.tclick1 = now;
     }
 }
 
@@ -1168,7 +1167,7 @@ void die(const char *errstr, ...) {
     va_start(ap, errstr);
     vfprintf(stderr, errstr, ap);
     va_end(ap);
-    exit(EXIT_FAILURE);
+    exit(1);
 }
 
 void execsh(void) {
@@ -1230,6 +1229,7 @@ void sigchld(int a) {
 		return;
 
     if (!WIFEXITED(stat) || WEXITSTATUS(stat))
+        die("child finished with error '%d'\n", stat);
     exit(0);
 }
 
@@ -1273,7 +1273,7 @@ void ttynew(void) {
 	if (opt_line) {
 		if((cmdfd = open(opt_line, O_RDWR)) < 0)
 			die("open line failed: %s\n", strerror(errno));
-		close(STDIN_FILENO);
+		close(0);
 		dup(cmdfd);
 		stty();
 		return;
