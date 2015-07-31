@@ -2832,6 +2832,14 @@ void xloadcols(void) {
 			else
 				die("Could not allocate color %d\n", i);
 		}
+    /* load colors [0-15] and [256-LEN(colorname)] (config.h) */
+    for (i = 0; i < LEN(colorname); i++) {
+        if (!colorname[i]) continue;
+        if (!XftColorAllocName(xw.dpy, xw.vis, xw.cmap, colorname[i],
+                               &dc.col[i])) {
+            die("Could not allocate color '%s'\n", colorname[i]);
+        }
+    }
     loaded = 1;
 }
 
