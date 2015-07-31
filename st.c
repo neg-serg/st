@@ -931,6 +931,7 @@ void selcopy(Time t) {
 void propnotify(XEvent *e) {
 	XPropertyEvent *xpev;
 	Atom clipboard = XInternAtom(xw.dpy, "CLIPBOARD", 0);
+	incratom = XInternAtom(xw.dpy, "INCR", 0);
 
 	xpev = &e->xproperty;
 	if (xpev->state == PropertyNewValue &&
