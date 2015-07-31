@@ -864,10 +864,11 @@ void bpress(XEvent *e) {
         selnormalize();
 
         if (sel.snap != 0) {
-            sel.mode = SEL_READY;
-        tsetdirt(sel.nb.y, sel.ne.y);
-        sel.tclick2 = sel.tclick1;
-        sel.tclick1 = now;
+                sel.mode = SEL_READY;
+            tsetdirt(sel.nb.y, sel.ne.y);
+            sel.tclick2 = sel.tclick1;
+            sel.tclick1 = now;
+        }
     }
 }
 
@@ -1754,7 +1755,7 @@ void tsetscroll(int t, int b) {
     term.bot = b;
 }
 
-void tsetmode(int priv, bool set, int *args, int narg) {
+void tsetmode(int priv, int set, int *args, int narg) {
     int *lim, mode;
     int alt;
 
@@ -2720,7 +2721,7 @@ void xloadcols(void) {
 			else
 				die("Could not allocate color %d\n", i);
 		}
-    loaded = true;
+    loaded = 1;
 }
 
 int xsetcolorname(int x, const char *name) {
@@ -3265,11 +3266,11 @@ void xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int
 	/* Render underline and strikethrough. */
 
     if (base.mode & ATTR_UNDERLINE) {
-        XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1,
+        XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1, width, 1);
     }
 
     if (base.mode & ATTR_STRUCK) {
-        XftDrawRect(xw.draw, fg, winx, winy + 2 * dc.font.ascent / 3,
+        XftDrawRect(xw.draw, fg, winx, winy + 2 * dc.font.ascent / 3, width, 1);
     }
 
     /* Reset clip to none. */
