@@ -3733,7 +3733,7 @@ int main(int argc, char *argv[]) {
             opt_class = EARGF(usage());
             break;
         case 'e':
-            if(argc > 1)
+            if(argc > 0)
                 --argc, ++argv;
             goto run;
         case 'f':
