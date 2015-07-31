@@ -492,7 +492,7 @@ static STREscape strescseq;
 static int cmdfd;
 static pid_t pid;
 static Selection sel;
-static int iofd = STDOUT_FILENO;
+static int iofd = 1;
 static char **opt_cmd = NULL;
 static char *opt_io = NULL;
 static char *opt_title = NULL;
@@ -1154,11 +1154,11 @@ void execsh(void) {
     signal(SIGALRM, SIG_DFL);
 
     execvp(prog, args);
-    _exit(EXIT_FAILURE);
+    _exit(1);
 }
 
 void sigchld(int a) {
-    int stat, ret;
+    int stat;
     pid_t p;
 
     if((p = waitpid(pid, &stat, WNOHANG)) < 0)
@@ -1167,9 +1167,8 @@ void sigchld(int a) {
 	if(pid != p)
 		return;
 
-    ret = WIFEXITED(stat) ? WEXITSTATUS(stat) : EXIT_FAILURE;
-    if (ret != EXIT_SUCCESS) die("child finished with error '%d'\n", stat);
-    exit(EXIT_SUCCESS);
+    if (!WIFEXITED(stat) || WEXITSTATUS(stat))
+    exit(0);
 }
 
 
@@ -1202,8 +1201,7 @@ void ttynew(void) {
 	if(opt_io) {
 		term.mode |= MODE_PRINT;
 		iofd = (!strcmp(opt_io, "-")) ?
-			  STDOUT_FILENO :
-			  open(opt_io, O_WRONLY | O_CREAT, 0666);
+              1 : open(opt_io, O_WRONLY | O_CREAT, 0666);
 		if(iofd < 0) {
 			fprintf(stderr, "Error opening %s:%s\n",
 				opt_io, strerror(errno));
@@ -1230,9 +1228,9 @@ void ttynew(void) {
         case 0:
             close(iofd);
             setsid(); /* create a new process group */
-            dup2(s, STDIN_FILENO);
-            dup2(s, STDOUT_FILENO);
-            dup2(s, STDERR_FILENO);
+            dup2(s, 0);
+            dup2(s, 1);
+            dup2(s, 2);
             if (ioctl(s, TIOCSCTTY, NULL) < 0)
                 die("ioctl TIOCSCTTY failed: %s\n", strerror(errno));
             close(s);
@@ -3553,7 +3551,7 @@ void cmessage(XEvent *e) {
     } else if (e->xclient.data.l[0] == xw.wmdeletewin) {
         /* Send SIGHUP to shell */
         kill(pid, SIGHUP);
-        exit(EXIT_SUCCESS);
+        exit(0);
     }
 }
 
