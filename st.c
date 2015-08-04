@@ -1961,9 +1961,6 @@ void tsetmode(int priv, int set, int *args, int narg) {
                               and can be mistaken for other control
                               codes. */
                 default:
-                    fprintf(stderr,
-                            "erresc: unknown private set/reset mode %d\n",
-                            *args);
                     break;
             }
         } else {
