@@ -9,12 +9,12 @@
 #define VIM_VERSION 1
 #define ST_BRIGHT 1
 #ifdef VIM_VERSION
-    static char font[] = "PragmataPro for Powerline:size=15";
+    static char *font = "PragmataPro for Powerline:size=15";
 #else
-    static char font[] = "PragmataPro for Powerline:size=17";
+    static char *font = "PragmataPro for Powerline:size=17";
 #endif
 static int borderpx = 0;
-static char shell[] = "/bin/zsh";
+static char *shell = "/bin/zsh";
 static char *utmp = NULL;
 static char stty_args[] = "stty raw -echo -iexten echonl";
 
@@ -43,7 +43,7 @@ static unsigned int tripleclicktimeout = 600;
 static int allowaltscreen = 1;
 
 /* frames per second st should at maximum draw to the screen */
-static unsigned int xfps = 240;
+static unsigned int xfps = 150;
 static unsigned int actionfps = 60;
 
 /*
@@ -59,7 +59,7 @@ static unsigned int blinktimeout = 800;
 static int bellvolume = 0;
 
 /* TERM value */
-static char termname[] = "st-256color";
+static char *termname = "st-256color";
 
 static unsigned int tabspaces = 8;
 

@@ -27,8 +27,35 @@
 #include <X11/keysym.h>
 #include <X11/Xft/Xft.h>
 #include <X11/XKBlib.h>
+#include <X11/Xresource.h>
 #include <fontconfig/fontconfig.h>
 #include <wchar.h>
+
+#ifdef __APPLE__
+/* this is super ugly, but an easy fix */
+#include <mach/mach_time.h>
+#define CLOCK_MONOTONIC 0
+#define ORWL_NANO (+1.0E-9)
+#define ORWL_GIGA UINT64_C(1000000000)
+
+static double orwl_timebase = 0.0;
+static uint64_t orwl_timestart = 0;
+
+int clock_gettime(int a, struct timespec *t) {
+	if (!orwl_timestart) {
+		mach_timebase_info_data_t tb = { 0 };
+		mach_timebase_info(&tb);
+		orwl_timebase = tb.numer;
+		orwl_timebase /= tb.denom;
+		orwl_timestart = mach_absolute_time();
+	}
+
+	double diff = (mach_absolute_time() - orwl_timestart) * orwl_timebase;
+	t->tv_sec = diff * ORWL_NANO;
+	t->tv_nsec = diff - (t->tv_sec * ORWL_GIGA);
+	return 0;
+}
+#endif
 
 #include "arg.h"
 
@@ -153,7 +180,8 @@ enum escape_state {
     ESC_TEST = 32,    /* Enter in test mode */
 };
 
-enum window_state { WIN_VISIBLE = 1, WIN_FOCUSED = 2 };
+/* enum window_state { WIN_VISIBLE = 1, WIN_FOCUSED = 2 }; */
+enum window_state { WIN_VISIBLE = 1, WIN_REDRAW = 2, WIN_FOCUSED = 4 };
 
 enum selection_mode { SEL_IDLE = 0, SEL_EMPTY = 1, SEL_READY = 2 };
 
@@ -2580,7 +2608,6 @@ int eschandle(uchar ascii) {
 
 void tputc(Rune u) {
 	char c[UTF_SIZ];
-    uchar ascii;
     int control;
     int width, len;
     Glyph *gp;
@@ -3320,11 +3347,11 @@ void xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int
 
 	/* Change basic system colors [0-7] to bright system colors [8-15] */
 	if((base.mode & ATTR_BOLD_FAINT) == ATTR_BOLD && BETWEEN(base.fg, 0, 7))
-#ifdef ST_BRIGHT
-		fg = &dc.col[base.fg + 8];
-#else
+/* #ifdef ST_BRIGHT */
+		/* fg = &dc.col[base.fg + 8]; */
+/* #else */
 		fg = &dc.col[base.fg];
-#endif
+/* #endif */
     if (IS_SET(MODE_REVERSE)) {
         if (fg == &dc.col[defaultfg]) {
             fg = &dc.col[defaultbg];
@@ -3866,6 +3893,67 @@ copyurl(const Arg *arg) {
 	free(linestr);
 }
 
+void config_init(void) {
+
+#define XRESOURCE_LOAD_STRING(NAME, DST)                  \
+	XrmGetResource(db, NAME, "String", &type, &ret);      \
+	if (ret.addr != NULL && !strncmp("String", type, 64)) \
+		DST = ret.addr;
+
+#define XRESOURCE_LOAD_INTEGER(NAME, DST)                 \
+    XrmGetResource(db, NAME, "String", &type, &ret);      \
+    if (ret.addr != NULL && !strncmp("String", type, 64)) \
+        DST = strtoul(ret.addr, NULL, 10);
+
+#define XRESOURCE_LOAD_FLOAT(NAME, DST)                   \
+    XrmGetResource(db, NAME, "String", &type, &ret);      \
+    if (ret.addr != NULL && !strncmp("String", type, 64)) \
+        DST = strtof(ret.addr, NULL);
+
+	if(!(xw.dpy = XOpenDisplay(NULL)))
+		die("Can't open display\n");
+
+	char *resm;
+	char *type;
+	XrmDatabase db;
+	XrmValue ret;
+
+	XrmInitialize();
+	resm = XResourceManagerString(xw.dpy);
+
+	if (resm != NULL) {
+		db = XrmGetStringDatabase(resm);
+		XRESOURCE_LOAD_STRING("st.color1", colorname[1]);
+		XRESOURCE_LOAD_STRING("st.color2", colorname[2]);
+		XRESOURCE_LOAD_STRING("st.color3", colorname[3]);
+		XRESOURCE_LOAD_STRING("st.color4", colorname[4]);
+		XRESOURCE_LOAD_STRING("st.color5", colorname[5]);
+		XRESOURCE_LOAD_STRING("st.color6", colorname[6]);
+		XRESOURCE_LOAD_STRING("st.color7", colorname[7]);
+		XRESOURCE_LOAD_STRING("st.color8", colorname[8]);
+		XRESOURCE_LOAD_STRING("st.color9", colorname[9]);
+		XRESOURCE_LOAD_STRING("st.color10", colorname[10]);
+		XRESOURCE_LOAD_STRING("st.color11", colorname[11]);
+		XRESOURCE_LOAD_STRING("st.color12", colorname[12]);
+		XRESOURCE_LOAD_STRING("st.color13", colorname[13]);
+		XRESOURCE_LOAD_STRING("st.color14", colorname[14]);
+		XRESOURCE_LOAD_STRING("st.color15", colorname[15]);
+		XRESOURCE_LOAD_STRING("st.background", colorname[257]);
+		XRESOURCE_LOAD_STRING("st.foreground", colorname[256]);
+		XRESOURCE_LOAD_STRING("st.cursorColor", colorname[258]);
+		XRESOURCE_LOAD_INTEGER("st.xfps", xfps);
+		XRESOURCE_LOAD_INTEGER("st.actionfps", actionfps);
+		XRESOURCE_LOAD_INTEGER("st.blinktimeout", blinktimeout);
+		XRESOURCE_LOAD_INTEGER("st.bellvolume", bellvolume);
+		XRESOURCE_LOAD_INTEGER("st.tabspaces", tabspaces);
+		XRESOURCE_LOAD_FLOAT("st.cwscale", cwscale);
+		XRESOURCE_LOAD_FLOAT("st.chscale", chscale);
+		XRESOURCE_LOAD_STRING("st.termname", termname);
+		XRESOURCE_LOAD_STRING("st.font", font);
+		XRESOURCE_LOAD_STRING("st.shell", shell);
+	}
+}
+
 int main(int argc, char *argv[]) {
     uint cols = 80, rows = 24;
 
@@ -3920,6 +4008,7 @@ run:
 	}
     setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
+    config_init();
 #ifdef VIM_VERSION
     setenv("ST_TERM","TRUE",1);
 #endif
