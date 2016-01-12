@@ -127,14 +127,6 @@ static const char *colorname[] = {
     [229] = "#ED0022",
     [218] = "#00ED85",
     [219] = "#008BED",
-    // -- num_bg(220)                  = #0f141a
-    // -- num_fg(221)                  = #265360
-    // -- num_hi(222)                  = #5c9caa
-    // -- powerline_hi(222)            = #5c9caa
-    // -- powerline_left_mode_hi(221)  = #265360
-    // -- powerline_git_more_dark(223) = #091f2c
-    // -- powerline_main(224)          = #10151b
-    // -- powerline_main_fg(225)       = #25535f
 // #endif
 	[255] = 0,
 
