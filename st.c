@@ -3971,7 +3971,8 @@ copyurl(const Arg *arg) {
 	char *c, *match = NULL;
 
 	row = (sel.ob.x >= 0 && sel.nb.y > 0) ? sel.nb.y-1 : term.bot;
-	row = startrow = LIMIT(row, term.top, term.bot);
+	LIMIT(row, term.top, term.bot);
+	startrow = row;
 
 	/* find the start of the last url before selection */
 	do {
