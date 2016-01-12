@@ -16,7 +16,7 @@
 static int borderpx = 0;
 static char *shell = "/bin/zsh";
 static char *utmp = NULL;
-static char stty_args[] = "stty raw -echo -iexten echonl";
+static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
 /* identification sequence returned in DA and DECID */
 static char vtiden[] = "\033[?6c";
@@ -24,9 +24,6 @@ static char vtiden[] = "\033[?6c";
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
 static float chscale = 1.0;
-
-/* thickness of underline and bar cursors */
-static unsigned int cursorthickness = 2;
 
 /*
  * word delimiter string
@@ -53,13 +50,18 @@ static unsigned int actionfps = 60;
 static unsigned int blinktimeout = 800;
 
 /*
+ * thickness of underline and bar cursors
+ */
+static unsigned int cursorthickness = 2;
+
+/*
  * bell volume. It must be a value between -100 and 100. Use 0 for disabling
  * it
  */
 static int bellvolume = 0;
 
 /* TERM value */
-static char *termname = "st-256color";
+static char termname[] = "st-256color";
 
 static unsigned int tabspaces = 8;
 
@@ -142,11 +144,23 @@ static const char *colorname[] = {
     "#5E468C",
 };
 
+/* bg opacity */
+static const int alpha = 0xdd;
 
 /*
  * Default colors (colorname index)
- * foreground, background, cursor
+ * foreground, background, cursor, reverse cursor
  */
+static unsigned int defaultrcs = 257;
+
+/*
+ * Default shape of cursor
+ * 2: Block ("█")
+ * 4: Underline ("_")
+ * 6: Bar ("|")
+ * 7: Snowman ("☃")
+ */
+static unsigned int cursorshape = 2;
 static unsigned int defaultfg = 256;
 static unsigned int defaultbg = 257;
 static unsigned int defaultcs = 258;
@@ -166,7 +180,7 @@ static unsigned int defaultunderline = 7;
 
 /* Internal mouse shortcuts. */
 /* Beware that overloading Button1 will disable the selection. */
-static Mousekey mshortcuts[] = {
+static MouseShortcut mshortcuts[] = {
 	/* button               mask            string */
 	{ Button4,              XK_ANY_MOD,     "\031" },
 	{ Button5,              XK_ANY_MOD,     "\005" },
@@ -177,14 +191,17 @@ static Mousekey mshortcuts[] = {
 
 static Shortcut shortcuts[] = {
 	/* mask                 keysym          function        argument */
+	{ XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0} },
 	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
 	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	{ MODKEY|ShiftMask,     XK_Prior,       xzoom,          {.i = +1} },
-	{ MODKEY|ShiftMask,     XK_Next,        xzoom,          {.i = -1} },
-	{ MODKEY|ShiftMask,     XK_Home,        xzoomreset,     {.i =  0} },
+	{ MODKEY|ShiftMask,     XK_Prior,       xzoom,          {.f = +1} },
+	{ MODKEY|ShiftMask,     XK_Next,        xzoom,          {.f = -1} },
+	{ MODKEY|ShiftMask,     XK_Home,        xzoomreset,     {.f =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ MODKEY|ShiftMask,     XK_Insert,      clippaste,      {.i =  0} },
+  //{ MODKEY|ShiftMask,     XK_C,           clipcopy,       {.i =  0} },
+  //{ MODKEY|ShiftMask,     XK_V,           clippaste,      {.i =  0} },
 	{ MODKEY,               XK_Num_Lock,    numlock,        {.i =  0} },
 	{ MODKEY,               XK_0,           copyurl,        {.i =  0} },
 };
@@ -231,6 +248,10 @@ static uint ignoremod = Mod2Mask|XK_SWITCH_MOD;
  * modifier, set to 0 to not use it. */
 static uint forceselmod = ShiftMask;
 
+/*
+ * This is the huge key array which defines all compatibility to the Linux
+ * world. Please decide about changes wisely.
+ */
 static Key key[] = {
 	/* keysym           mask            string      appkey appcursor crlf */
 	{ XK_KP_Home,       ShiftMask,      "\033[2J",       0,   -1,    0},
@@ -270,7 +291,7 @@ static Key key[] = {
 	{ XK_KP_Delete,     ShiftMask,      "\033[2K",      -1,    0,    0},
 	{ XK_KP_Delete,     ShiftMask,      "\033[3;2~",    +1,    0,    0},
 	{ XK_KP_Delete,     XK_ANY_MOD,     "\033[P",       -1,    0,    0},
-	{ XK_KP_Delete,     XK_ANY_MOD,     "\177",         +1,    0,    0},
+	{ XK_KP_Delete,     XK_ANY_MOD,     "\033[3~",      +1,    0,    0},
 	{ XK_KP_Multiply,   XK_ANY_MOD,     "\033Oj",       +2,    0,    0},
 	{ XK_KP_Add,        XK_ANY_MOD,     "\033Ok",       +2,    0,    0},
 	{ XK_KP_Enter,      XK_ANY_MOD,     "\033OM",       +2,    0,    0},
@@ -325,7 +346,8 @@ static Key key[] = {
 	{ XK_Delete,        ShiftMask,      "\033[2K",      -1,    0,    0},
 	{ XK_Delete,        ShiftMask,      "\033[3;2~",    +1,    0,    0},
 	{ XK_Delete,        XK_ANY_MOD,     "\033[P",       -1,    0,    0},
-	{ XK_Delete,        XK_ANY_MOD,     "\177",         +1,    0,    0},
+	{ XK_Delete,        XK_ANY_MOD,     "\033[3~",      +1,    0,    0},
+	{ XK_BackSpace,     XK_NO_MOD,      "\177",          0,    0,    0},
 	{ XK_Home,          ShiftMask,      "\033[2J",       0,   -1,    0},
 	{ XK_Home,          ShiftMask,      "\033[1;2H",     0,   +1,    0},
 	{ XK_Home,          XK_ANY_MOD,     "\033[H",        0,   -1,    0},
