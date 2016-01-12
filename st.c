@@ -3920,24 +3920,15 @@ void config_init(void) {
 
 	XrmInitialize();
 	resm = XResourceManagerString(xw.dpy);
-
 	if (resm != NULL) {
 		db = XrmGetStringDatabase(resm);
-		XRESOURCE_LOAD_STRING("st.color1", colorname[1]);
-		XRESOURCE_LOAD_STRING("st.color2", colorname[2]);
-		XRESOURCE_LOAD_STRING("st.color3", colorname[3]);
-		XRESOURCE_LOAD_STRING("st.color4", colorname[4]);
-		XRESOURCE_LOAD_STRING("st.color5", colorname[5]);
-		XRESOURCE_LOAD_STRING("st.color6", colorname[6]);
-		XRESOURCE_LOAD_STRING("st.color7", colorname[7]);
-		XRESOURCE_LOAD_STRING("st.color8", colorname[8]);
-		XRESOURCE_LOAD_STRING("st.color9", colorname[9]);
-		XRESOURCE_LOAD_STRING("st.color10", colorname[10]);
-		XRESOURCE_LOAD_STRING("st.color11", colorname[11]);
-		XRESOURCE_LOAD_STRING("st.color12", colorname[12]);
-		XRESOURCE_LOAD_STRING("st.color13", colorname[13]);
-		XRESOURCE_LOAD_STRING("st.color14", colorname[14]);
-		XRESOURCE_LOAD_STRING("st.color15", colorname[15]);
+        char xres_str[80];
+		for (int i = 1; i < 256; i++){
+		    sprintf(xres_str, "%s%d","st.color",i);
+            XrmGetResource(db, xres_str, "String", &type, &ret);      \
+            if (ret.addr != NULL && !strncmp("String", type, 64)) \
+                colorname[i] = ret.addr;
+		}
 		XRESOURCE_LOAD_STRING("st.background", colorname[257]);
 		XRESOURCE_LOAD_STRING("st.foreground", colorname[256]);
 		XRESOURCE_LOAD_STRING("st.cursorColor", colorname[258]);
