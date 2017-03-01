@@ -2371,7 +2371,7 @@ void strdump(void) {
             fprintf(stderr, "(%02x)", c);
         }
     }
-	fprintf(stderr, "ESC\\\n");
+    fprintf(stderr, "ESC\\\n");
 }
 
 void strreset(void) { memset(&strescseq, 0, sizeof(strescseq)); }
@@ -3097,15 +3097,32 @@ int xgeommasktogravity(int mask) {
 }
 
 int xloadfont(Font *f, FcPattern *pattern) {
+    FcPattern *configured;
     FcPattern *match;
     FcResult result;
     XGlyphInfo extents;
     int wantattr, haveattr;
 
-    match = XftFontMatch(xw.dpy, xw.scr, pattern, &result);
-    if (!match) return 1;
+    /*
+     * Manually configure instead of calling XftMatchFont
+     * so that we can use the configured pattern for
+     * "missing glyph" lookups.
+     */
+    configured = FcPatternDuplicate(pattern);
+    if (!configured)
+        return 1;
+
+    FcConfigSubstitute(NULL, configured, FcMatchPattern);
+    XftDefaultSubstitute(xw.dpy, xw.scr, configured);
+
+    match = FcFontMatch(NULL, configured, &result);
+    if (!match) {
+        FcPatternDestroy(configured);
+        return 1;
+    }
 
     if (!(f->match = XftFontOpenPattern(xw.dpy, match))) {
+        FcPatternDestroy(configured);
         FcPatternDestroy(match);
         return 1;
     }
@@ -3137,7 +3154,7 @@ int xloadfont(Font *f, FcPattern *pattern) {
                        strlen(ascii_printable), &extents);
 
     f->set = NULL;
-    f->pattern = FcPatternDuplicate(pattern);
+    f->pattern = configured;
 
     f->ascent = f->match->ascent;
     f->descent = f->match->descent;
