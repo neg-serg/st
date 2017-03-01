@@ -177,12 +177,10 @@ static unsigned int mousefg = 7;
 static unsigned int mousebg = 0;
 
 /*
- * Colors used, when the specific fg == defaultfg. So in reverse mode this
- * will reverse too. Another logic would only make the simple feature too
- * complex.
+ * Color used to display font attributes when fontconfig selected a font which
+ * doesn't match the ones requested.
  */
-static unsigned int defaultitalic = 11;
-static unsigned int defaultunderline = 7;
+static unsigned int defaultattr = 11;
 
 /* Internal mouse shortcuts. */
 /* Beware that overloading Button1 will disable the selection. */
@@ -194,6 +192,7 @@ static MouseShortcut mshortcuts[] = {
 
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
+#define MODKEY4 Mod4Mask
 
 static Shortcut shortcuts[] = {
 	/* mask                   keysym          function        argument */
@@ -205,11 +204,13 @@ static Shortcut shortcuts[] = {
 	{ MODKEY|ShiftMask,       XK_Next,        xzoom,          {.f = -1} },
 	{ MODKEY|ShiftMask,       XK_Home,        xzoomreset,     {.f =  0} },
 	{ ShiftMask,              XK_Insert,      selpaste,       {.i =  0} },
-	{ MODKEY|ShiftMask,       XK_Insert,      clippaste,      {.i =  0} },
-	{ ControlMask|ShiftMask,  XK_P,           externalpipe,   {.v = "~/bin/scripts/xurls | dmenu -yoffset -22 -l 10 | xargs -r open" } },
-  //{ MODKEY|ShiftMask,       XK_C,           clipcopy,       {.i =  0} },
-  //{ MODKEY|ShiftMask,       XK_V,           clippaste,      {.i =  0} },
+	{ ControlMask|ShiftMask,  XK_P,           externalpipe,   {.v = "urlscan | rofi -dmenu -yoffset -22 -l 5 | xargs -r open" } },
+    { MODKEY4|ShiftMask,      XK_C,           clipcopy,       {.i =  0} },
+    { MODKEY4|ShiftMask,      XK_1,           copyurl,        {.i =  0} },
+    { MODKEY4|ShiftMask,      XK_V,           clippaste,      {.i =  0} },
+	{ MODKEY4|ShiftMask,      XK_Insert,      clippaste,      {.i =  0} },
 	{ MODKEY,                 XK_Num_Lock,    numlock,        {.i =  0} },
+	{ MODKEY,                 XK_Control_L,   iso14755,       {.i =  0} },
 };
 
 /*

@@ -3679,7 +3679,6 @@ void xdrawcursor(void) {
     int ena_sel = sel.ob.x != -1 && sel.alt == IS_SET(MODE_ALTSCREEN);
 
     Color drawcol;
-    XRenderColor dccol;
 
     LIMIT(oldx, 0, term.col - 1);
     LIMIT(oldy, 0, term.row - 1);
