@@ -1063,8 +1063,7 @@ void selnotify(XEvent *e) {
      * Deleting the property again tells the selection owner to send the
      * next data chunk in the property.
      */
-    if (e->type == PropertyNotify)
-        XDeleteProperty(xw.dpy, xw.win, (int)property);
+    XDeleteProperty(xw.dpy, xw.win, (int)property);
 }
 
 void selpaste(const Arg *dummy) {
