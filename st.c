@@ -454,7 +454,6 @@ static void xresettitle(void);
 static void xsetpointermotion(int);
 static void xseturgency(int);
 static void xsetsel(char *, Time);
-static void xtermclear(int, int, int, int);
 static void xunloadfont(Font *);
 static void xunloadfonts(void);
 static void xresize(int, int);
@@ -2950,12 +2949,6 @@ int xsetcolorname(int x, const char *name) {
     return 0;
 }
 
-void xtermclear(int col1, int row1, int col2, int row2) {
-    XftDrawRect(xw.draw, &dc.col[IS_SET(MODE_REVERSE) ? defaultfg : defaultbg],
-                borderpx + col1 * xw.cw, borderpx + row1 * xw.ch,
-                (col2 - col1 + 1) * xw.cw, (row2 - row1 + 1) * xw.ch);
-}
-
 /*
  * Absolute coordinates.
  */
@@ -3656,7 +3649,6 @@ void drawregion(int x1, int y1, int x2, int y2) {
     for (y = y1; y < y2; y++) {
         if (!term.dirty[y]) continue;
 
-        xtermclear(0, y, term.col, y);
         term.dirty[y] = 0;
 
         specs = term.specbuf;
