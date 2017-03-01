@@ -7,8 +7,23 @@
  */
 static char font[] = "Fixed:pixelsize=13:style=SemiCondensed";
 static int borderpx = 2;
+
+/*
+ * What program is execed by st depends of these precedence rules:
+ * 1: program passed with -e
+ * 2: utmp option
+ * 3: SHELL environment variable
+ * 4: value of shell in /etc/passwd
+ * 5: value of shell in config.h
+ */
+
 static char shell[] = "/bin/sh";
 static char *utmp = NULL;
+
+/* This configuration is basically 38400 8N1, without echo and
+ * in raw mode. Kernel will not process any of the characters
+ * sent by the user. */
+static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
 /* identification sequence returned in DA and DECID */
 static char vtiden[] = "\033[?6c";

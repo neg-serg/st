@@ -572,7 +572,8 @@ static Fontcache frc[16];
 static int frclen = 0;
 
 ssize_t xwrite(int fd, const char *s, size_t len) {
-	size_t aux = len, r;
+	size_t aux = len;
+	ssize_t r;
 
     while (len > 0) {
         r = write(fd, s, len);
@@ -1220,9 +1221,8 @@ void execsh(void) {
             die("who are you?\n");
     }
 
-    if (!(sh = getenv("SHELL"))) {
+    if (NULL == (sh = getenv("SHELL")))
         sh = (pw->pw_shell[0]) ? pw->pw_shell : shell;
-    }
 
     if (opt_cmd)
         prog = opt_cmd[0];
@@ -1307,8 +1307,7 @@ void ttynew(void) {
 	if (opt_line) {
 		if((cmdfd = open(opt_line, O_RDWR)) < 0)
 			die("open line failed: %s\n", strerror(errno));
-		close(0);
-		dup(cmdfd);
+		dup2(cmdfd, 0);
 		stty();
 		return;
 	}
@@ -3856,10 +3855,9 @@ void run(void) {
 	do {
         XNextEvent(xw.dpy, &ev);
 		/*
-		 * XFilterEvent is required to be called after you using XOpenIM,
-		 * this is not unnecessary.It does not only filter the key event,
-		 * but some clientmessage for input method as well.
-		 */
+         * This XFilterEvent call is required because of XOpenIM. It
+         * does filter out the key event and some client message for
+         * the input method too.	 */
 		if(XFilterEvent(&ev, None)) continue;
         if (ev.type == ConfigureNotify) {
             w = ev.xconfigure.width;

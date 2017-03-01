@@ -2,16 +2,15 @@
 
 /*
  * appearance
- *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 
 #define VIM_VERSION 1
 #define ST_BRIGHT 1
 #ifdef VIM_VERSION
-    static char *font = "PragmataPro for Powerline:size=15";
+    static char *font = "PragmataPro for Powerline:size=15:antialias=true:autohint=true";
 #else
-    static char *font = "PragmataPro for Powerline:size=17";
+    static char *font = "PragmataPro for Powerline:size=17:antialias=true:autohint=true";
 #endif
 static int borderpx = 0;
 static char *shell = "/bin/zsh";
@@ -27,7 +26,6 @@ static float chscale = 1.0;
 
 /*
  * word delimiter string
- *
  * More advanced example: " `'\"()[]{}"
  */
 static char worddelimiters[] = " ";

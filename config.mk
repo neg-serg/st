@@ -1,10 +1,8 @@
 # st version
-VERSION = 0.6
+VERSION = 0.7
 
-# Customize below to fit your system
-
-# paths
-PREFIX = /usr/local
+# Customize below to fit your system paths
+PREFIX = /usr
 MANPREFIX = ${PREFIX}/share/man
 
 X11INC = /usr/X11R6/include
@@ -40,4 +38,3 @@ LDFLAGS += -g ${LIBS}
 
 # compiler and linker
 # CC = cc
-
