@@ -162,6 +162,7 @@ enum term_mode {
     MODE_BRCKTPASTE = 1 << 19,
     MODE_PRINT = 1 << 20,
     MODE_UTF8 = 1 << 21,
+    MODE_SIXEL = 1 << 22,
     MODE_MOUSE =
         MODE_MOUSEBTN | MODE_MOUSEMOTION | MODE_MOUSEX10 | MODE_MOUSEMANY,
 };
@@ -179,11 +180,12 @@ enum charset {
 enum escape_state {
     ESC_START = 1,
     ESC_CSI = 2,
-    ESC_STR = 4, /* DCS, OSC, PM, APC */
+    ESC_STR = 4,  /* OSC, PM, APC */
     ESC_ALTCHARSET = 8,
     ESC_STR_END = 16, /* a final string was encountered */
     ESC_TEST = 32,    /* Enter in test mode */
     ESC_UTF8 = 64,
+    ESC_DCS =128,
 };
 
 /* enum window_state { WIN_VISIBLE = 1, WIN_FOCUSED = 2 }; */
@@ -439,7 +441,6 @@ static void ttyresize(void);
 static void ttysend(char *, size_t);
 static void ttywrite(const char *, size_t);
 static void tstrsequence(uchar);
-
 static inline ushort sixd_to_16bit(int);
 static int xmakeglyphfontspecs(XftGlyphFontSpec *, const Glyph *, int, int, int);
 static void xdrawglyphfontspecs(const XftGlyphFontSpec *, Glyph, int, int, int);
@@ -1358,7 +1359,7 @@ size_t ttyread(void) {
     ptr = buf;
 
     for (;;) {
-        if (IS_SET(MODE_UTF8)) {
+        if (IS_SET(MODE_UTF8) && !IS_SET(MODE_SIXEL)) {
             /* process a complete utf8 char */
             charsize = utf8decode(ptr, &unicodep, buflen);
             if (charsize == 0)
@@ -2314,6 +2315,7 @@ void strhandle(void) {
             xsettitle(strescseq.args[0]);
             return;
         case 'P': /* DCS -- Device Control String */
+            term.mode |= ESC_DCS;
         case '_': /* APC -- Application Program Command */
         case '^': /* PM -- Privacy Message */
             return;
@@ -2468,9 +2470,12 @@ void tdectest(char c) {
 }
 
 void tstrsequence(uchar c) {
+    strreset();
+
     switch (c) {
     case 0x90:   /* DCS -- Device Control String */
         c = 'P';
+        term.esc |= ESC_DCS;
         break;
     case 0x9f:   /* APC -- Application Program Command */
         c = '_';
@@ -2482,7 +2487,6 @@ void tstrsequence(uchar c) {
         c = ']';
         break;
     }
-    strreset();
     strescseq.type = c;
     term.esc |= ESC_STR;
 }
@@ -2717,7 +2721,7 @@ void tputc(Rune u) {
     Glyph *gp;
 
     control = ISCONTROL(u);
-    if (!IS_SET(MODE_UTF8)) {
+    if (!IS_SET(MODE_UTF8) && !IS_SET(MODE_SIXEL)) {
         c[0] = u;
         width = len = 1;
     } else {
@@ -2739,13 +2743,24 @@ void tputc(Rune u) {
     if (term.esc & ESC_STR) {
         if(u == '\a' || u == 030 || u == 032 || u == 033 ||
            ISCONTROLC1(u)) {
-            term.esc &= ~(ESC_START | ESC_STR);
+            term.esc &= ~(ESC_START|ESC_STR|ESC_DCS);
+            if (IS_SET(MODE_SIXEL)) {
+                /* TODO: render sixel */;
+                term.mode &= ~MODE_SIXEL;
+                return;
+            }
             term.esc |= ESC_STR_END;
-        } else if (strescseq.len + len < sizeof(strescseq.buf) - 1) {
-            memmove(&strescseq.buf[strescseq.len], c, len);
-            strescseq.len += len;
+            goto check_control_code;
+        }
+
+        if (IS_SET(MODE_SIXEL)) {
+            /* TODO: implement sixel mode */
             return;
-        } else {
+        }
+        if (term.esc&ESC_DCS && strescseq.len == 0 && u == 'q')
+            term.mode |= MODE_SIXEL;
+
+        if (strescseq.len+len >= sizeof(strescseq.buf)-1) {
             /*
              * Here is a bug in terminals. If the user never sends
              * some code to stop the str or esc command, then st
@@ -2761,8 +2776,13 @@ void tputc(Rune u) {
              */
             return;
         }
+
+        memmove(&strescseq.buf[strescseq.len], c, len);
+        strescseq.len += len;
+        return;
     }
 
+check_control_code:
     /*
      * Actions of control codes must be performed as soon they arrive
      * because they can be embedded inside a control sequence, and
