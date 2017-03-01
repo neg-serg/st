@@ -1,12 +1,15 @@
 /* See LICENSE file for copyright and license details. */
 
-/*
- * appearance
- *
- * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
- */
-static char font[] = "Fixed:pixelsize=13:style=SemiCondensed";
+#ifdef VIM_VERSION
+    static char *font = "PragmataPro for Powerline:size=15:antialias=true:autohint=true";
+#else
+    static char *font = "PragmataPro for Powerline:size=17:antialias=true:autohint=true";
+#endif
 static int borderpx = 2;
+
+/* Default columns and rows numbers */
+static unsigned int cols = 80;
+static unsigned int rows = 24;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -32,11 +35,7 @@ static char vtiden[] = "\033[?6c";
 static float cwscale = 1.0;
 static float chscale = 1.0;
 
-/*
- * word delimiter string
- *
- * More advanced example: " `'\"()[]{}"
- */
+/* Word delimiter string. More advanced example: " `'\"()[]{}" */
 static char worddelimiters[] = " ";
 
 /* selection timeouts (in milliseconds) */
@@ -59,17 +58,13 @@ static unsigned int blinktimeout = 800;
 /* thickness of underline and bar cursors */
 static unsigned int cursorthickness = 2;
 
-/*
- * bell volume. It must be a value between -100 and 100. Use 0 for disabling
- * it
- */
+/* Bell volume. It must be a value between -100 and 100. Use 0 for disabling it */
 static int bellvolume = 0;
 
 /* TERM value */
 static char termname[] = "st-256color";
 
-static unsigned int tabspaces = 8;
-
+static unsigned int tabspaces = 4;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {

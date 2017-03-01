@@ -1,10 +1,5 @@
 /* See LICENSE file for copyright and license details. */
 
-/*
- * appearance
- * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
- */
-
 #define VIM_VERSION 1
 #define ST_BRIGHT 1
 #ifdef VIM_VERSION
@@ -20,14 +15,15 @@ static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 /* identification sequence returned in DA and DECID */
 static char vtiden[] = "\033[?6c";
 
+/* Default columns and rows numbers */
+static unsigned int cols = 80;
+static unsigned int rows = 24;
+
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
 static float chscale = 1.0;
 
-/*
- * word delimiter string
- * More advanced example: " `'\"()[]{}"
- */
+/* Word delimiter string. More advanced example: " `'\"()[]{}" */
 static char worddelimiters[] = " ";
 
 /* selection timeouts (in milliseconds) */
@@ -61,7 +57,7 @@ static int bellvolume = 0;
 /* TERM value */
 static char termname[] = "st-256color";
 
-static unsigned int tabspaces = 8;
+static unsigned int tabspaces = 4;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
