@@ -23,6 +23,12 @@ static unsigned int rows = 24;
 static char shell[] = "/bin/sh";
 static char *utmp = NULL;
 
+/* Printable characters in ASCII, used to estimate the advance width of single wide characters. */
+static char ascii_printable[] =
+       " !\"#$%&'()*+,-./0123456789:;<=>?"
+       "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+       "`abcdefghijklmnopqrstuvwxyz{|}~";
+
 /* This configuration is basically 38400 8N1, without echo and
  * in raw mode. Kernel will not process any of the characters
  * sent by the user. */

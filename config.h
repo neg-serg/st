@@ -15,6 +15,12 @@ static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 /* identification sequence returned in DA and DECID */
 static char vtiden[] = "\033[?6c";
 
+/* Printable characters in ASCII, used to estimate the advance width of single wide characters. */
+static char ascii_printable[] =
+       " !\"#$%&'()*+,-./0123456789:;<=>?"
+       "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+       "`abcdefghijklmnopqrstuvwxyz{|}~";
+
 /* Default columns and rows numbers */
 static unsigned int cols = 80;
 static unsigned int rows = 24;
