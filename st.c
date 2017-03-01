@@ -3018,7 +3018,7 @@ int xloadfont(Font *f, FcPattern *pattern) {
 
     XftTextExtentsUtf8(xw.dpy, f->match,
                        (const FcChar8 *) ascii_printable,
-                       LEN(ascii_printable), &extents);
+                       strlen(ascii_printable), &extents);
 
     f->set = NULL;
     f->pattern = FcPatternDuplicate(pattern);
@@ -3029,7 +3029,7 @@ int xloadfont(Font *f, FcPattern *pattern) {
     f->rbearing = f->match->max_advance_width;
 
     f->height = f->ascent + f->descent;
-    f->width = DIVCEIL(extents.xOff, LEN(ascii_printable));
+    f->width = DIVCEIL(extents.xOff, strlen(ascii_printable));
 
     return 0;
 }
