@@ -370,6 +370,8 @@ typedef struct {
     int width;
     int ascent;
     int descent;
+    int badslant;
+    int badweight;
     short lbearing;
     short rbearing;
     XftFont *match;
@@ -2262,22 +2264,22 @@ void csidump(void) {
     int i;
     uint c;
 
-    printf("ESC[");
+    fprintf(stderr, "ESC[");
     for (i = 0; i < csiescseq.len; i++) {
         c = csiescseq.buf[i] & 0xff;
         if (isprint(c)) {
-            putchar(c);
+            putc(c, stderr);
         } else if (c == '\n') {
-            printf("(\\n)");
+            fprintf(stderr, "(\\n)");
         } else if (c == '\r') {
-            printf("(\\r)");
+            fprintf(stderr, "(\\r)");
         } else if (c == 0x1b) {
-            printf("(\\e)");
+            fprintf(stderr, "(\\e)");
         } else {
-            printf("(%02x)", c);
+            fprintf(stderr, "(%02x)", c);
         }
     }
-    putchar('\n');
+    putc('\n', stderr);
 }
 
 void csireset(void) { memset(&csiescseq, 0, sizeof(csiescseq)); }
@@ -2351,24 +2353,25 @@ void strdump(void) {
     int i;
     uint c;
 
-    printf("ESC%c", strescseq.type);
+    fprintf(stderr, "ESC%c", strescseq.type);
     for (i = 0; i < strescseq.len; i++) {
         c = strescseq.buf[i] & 0xff;
         if (c == '\0') {
+            putc('\n', stderr);
             return;
         } else if (isprint(c)) {
-            putchar(c);
+            putc(c, stderr);
         } else if (c == '\n') {
-            printf("(\\n)");
+            fprintf(stderr, "(\\n)");
         } else if (c == '\r') {
-            printf("(\\r)");
+            fprintf(stderr, "(\\r)");
         } else if (c == 0x1b) {
-            printf("(\\e)");
+            fprintf(stderr, "(\\e)");
         } else {
-            printf("(%02x)", c);
+            fprintf(stderr, "(%02x)", c);
         }
     }
-    printf("ESC\\\n");
+	fprintf(stderr, "ESC\\\n");
 }
 
 void strreset(void) { memset(&strescseq, 0, sizeof(strescseq)); }
@@ -3097,6 +3100,7 @@ int xloadfont(Font *f, FcPattern *pattern) {
     FcPattern *match;
     FcResult result;
     XGlyphInfo extents;
+    int wantattr, haveattr;
 
     match = XftFontMatch(xw.dpy, xw.scr, pattern, &result);
     if (!match) return 1;
@@ -3104,6 +3108,28 @@ int xloadfont(Font *f, FcPattern *pattern) {
     if (!(f->match = XftFontOpenPattern(xw.dpy, match))) {
         FcPatternDestroy(match);
         return 1;
+    }
+
+    if ((XftPatternGetInteger(pattern, "slant", 0, &wantattr) ==
+        XftResultMatch)) {
+        /*
+         * Check if xft was unable to find a font with the appropriate
+         * slant but gave us one anyway. Try to mitigate.
+         */
+        if ((XftPatternGetInteger(f->match->pattern, "slant", 0,
+            &haveattr) != XftResultMatch) || haveattr < wantattr) {
+            f->badslant = 1;
+            fputs("st: font slant does not match\n", stderr);
+        }
+    }
+
+    if ((XftPatternGetInteger(pattern, "weight", 0, &wantattr) ==
+        XftResultMatch)) {
+        if ((XftPatternGetInteger(f->match->pattern, "weight", 0,
+            &haveattr) != XftResultMatch) || haveattr != wantattr) {
+            f->badweight = 1;
+            fputs("st: font weight does not match\n", stderr);
+        }
     }
 
     XftTextExtentsUtf8(xw.dpy, f->match,
@@ -3497,14 +3523,13 @@ void xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int
     XRenderColor colfg, colbg;
     XRectangle r;
 
-    /* Determine foreground and background colors based on mode. */
-    if(base.fg == defaultfg) {
-        if(base.mode & ATTR_ITALIC)
-            base.fg = defaultitalic;
-        else if((base.mode & ATTR_ITALIC) && (base.mode & ATTR_BOLD))
-            base.fg = defaultitalic;
-        else if(base.mode & ATTR_UNDERLINE)
-            base.fg = defaultunderline;
+    /* Fallback on color display for attributes not supported by the font */
+    if (base.mode & ATTR_ITALIC && base.mode & ATTR_BOLD) {
+        if (dc.ibfont.badslant || dc.ibfont.badweight)
+            base.fg = defaultattr;
+    } else if ((base.mode & ATTR_ITALIC && dc.ifont.badslant) ||
+        (base.mode & ATTR_BOLD && dc.bfont.badweight)) {
+        base.fg = defaultattr;
     }
 
     if (IS_TRUECOL(base.fg)) {

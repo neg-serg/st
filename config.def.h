@@ -125,12 +125,10 @@ static unsigned int defaultbg = 0;
 static unsigned int defaultcs = 256;
 
 /*
- * Colors used, when the specific fg == defaultfg. So in reverse mode this
- * will reverse too. Another logic would only make the simple feature too
- * complex.
+ * Color used to display font attributes when fontconfig selected a font which
+ * doesn't match the ones requested.
  */
-static unsigned int defaultitalic = 11;
-static unsigned int defaultunderline = 7;
+static unsigned int defaultattr = 11;
 
 /* Internal mouse shortcuts. */
 /* Beware that overloading Button1 will disable the selection. */
