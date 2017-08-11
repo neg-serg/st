@@ -4184,11 +4184,36 @@ void xrdb_load(void) {
             if (ret.addr != NULL && !strncmp("String", type, 64)) \
                 colorname[i] = ret.addr;
         }
+
+		// handling colors here without macros to do via loop.
+		int i = 0;
+		char loadValue[11] = "";
+		for (i = 0; i < 256; i++) {
+			sprintf(loadValue, "%s%d", "st.color", i);
+
+			if(!XrmGetResource(xrdb, loadValue, loadValue, &type, &ret)) {
+				sprintf(loadValue, "%s%d", "*.color", i);
+				if (!XrmGetResource(xrdb, loadValue, loadValue, &type, &ret)) {
+					// reset if not found.
+					colorname[i] = NULL;
+				}
+			}
+
+			if (ret.addr != NULL && !strncmp("String", type, 64)){
+				colorname[i] = ret.addr;
+			}
+		}
+
         XRESOURCE_LOAD_STRING("background", colorname[257]);
         XRESOURCE_LOAD_STRING("foreground", colorname[256]);
-        XRESOURCE_LOAD_STRING("cursorColor", colorname[258]);
+
         XRESOURCE_LOAD_STRING("font", font);
+
+        XRESOURCE_LOAD_STRING("cursorColor", colorname[258]);
+
+		// note: make flag here to take priority in shell.
         XRESOURCE_LOAD_STRING("shell", shell);
+
         XRESOURCE_LOAD_INTEGER("xfps", xfps);
         XRESOURCE_LOAD_INTEGER("actionfps", actionfps);
         XRESOURCE_LOAD_INTEGER("blinktimeout", blinktimeout);
