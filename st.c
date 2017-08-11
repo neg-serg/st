@@ -1236,6 +1236,9 @@ void execsh(void) {
     if (NULL == (sh = getenv("SHELL")))
         sh = (pw->pw_shell[0]) ? pw->pw_shell : shell;
 
+	if (shell[0] == '/')
+		sh = shell;
+
     if (opt_cmd)
         prog = opt_cmd[0];
     else if (utmp)
@@ -4206,14 +4209,9 @@ void xrdb_load(void) {
 
         XRESOURCE_LOAD_STRING("background", colorname[257]);
         XRESOURCE_LOAD_STRING("foreground", colorname[256]);
-
         XRESOURCE_LOAD_STRING("font", font);
-
         XRESOURCE_LOAD_STRING("cursorColor", colorname[258]);
-
-		// note: make flag here to take priority in shell.
         XRESOURCE_LOAD_STRING("shell", shell);
-
         XRESOURCE_LOAD_INTEGER("xfps", xfps);
         XRESOURCE_LOAD_INTEGER("actionfps", actionfps);
         XRESOURCE_LOAD_INTEGER("blinktimeout", blinktimeout);
