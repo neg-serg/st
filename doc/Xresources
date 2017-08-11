@@ -1,19 +1,28 @@
+! shit will fallback to *.option if st.option is not present.
+! see src/config.h for more information about option meanings.
+
+! These options only take effect on startup.
+st.termname:        xterm-256color
+st.shell:           /bin/dash
+st.tabspaces:       4
+
+
+! These options can be reloaded live.
 st.font:            PragmataPro for Powerline:size=17
 st.bold_font:       1
-st.borderpx:		1
+st.borderpx:        10
+
 st.background:      #131415
 st.foreground:      #A3BAD0
 st.cursorColor:     #8d9b53
-st.termname:        xterm-256color
-st.shell:           /bin/sh
-st.bellvolume:      100
-st.tabspaces:       8
+
 st.chscale:         1.0
 st.cwscale:         1.0
-st.xfps:			120
-st.actionfps:		30
-st.blinktimeout:	800
-st.tabspaces:		8
+st.xfps:            120
+st.actionfps:       30
+st.tabspaces:       8
+st.blinktimeout:    800
+st.bellvolume:      100
 
 st.color0:          #353540
 st.color8:          #545466

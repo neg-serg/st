@@ -4194,6 +4194,7 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_INTEGER("blinktimeout", blinktimeout);
         XRESOURCE_LOAD_INTEGER("bellvolume", bellvolume);
         XRESOURCE_LOAD_INTEGER("tabspaces", tabspaces);
+        XRESOURCE_LOAD_INTEGER("cursorshape", xw.cursor);
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("chscale", chscale);
         XRESOURCE_LOAD_INTEGER("bold_font", bold_font);
