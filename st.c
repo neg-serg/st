@@ -4205,7 +4205,7 @@ void xrdb_load(void) {
 
 		// handling colors here without macros to do via loop.
 		int i = 0;
-		char loadValue[11] = "";
+		char loadValue[12] = "";
 		for (i = 0; i < 256; i++) {
 			sprintf(loadValue, "%s%d", "st.color", i);
 
