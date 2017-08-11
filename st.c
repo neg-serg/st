@@ -192,7 +192,6 @@ enum escape_state {
     ESC_DCS =128,
 };
 
-/* enum window_state { WIN_VISIBLE = 1, WIN_FOCUSED = 2 }; */
 enum window_state { WIN_VISIBLE = 1, WIN_REDRAW = 2, WIN_FOCUSED = 4 };
 
 enum selection_mode { SEL_IDLE = 0, SEL_EMPTY = 1, SEL_READY = 2 };
@@ -288,6 +287,7 @@ typedef struct {
     int w, h;     /* window width and height */
     int ch;       /* char height */
     int cw;       /* char width  */
+    int cyo;      /* char y offset */
     int depth;    /* bit depth */
     char state;   /* focus, redraw, visible */
     int cursor;   /* cursor style */
@@ -3449,7 +3449,7 @@ int xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, i
                 font = &dc.bfont;
                 frcflags = FRC_BOLD;
             }
-            yp = winy + font->ascent;
+            yp = winy + font->ascent + xw.cyo;
         }
 
         /* Lookup character index with default font. */
@@ -3649,11 +3649,11 @@ void xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int
 
     /* Render underline and strikethrough. */
     if (base.mode & ATTR_UNDERLINE) {
-        XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1, width, 1);
+		XftDrawRect(xw.draw, fg, winx, winy + xw.cyo + dc.font.ascent + 1, width, 1);
     }
 
     if (base.mode & ATTR_STRUCK) {
-        XftDrawRect(xw.draw, fg, winx, winy + 2 * dc.font.ascent / 3, width, 1);
+        XftDrawRect(xw.draw, fg, winx, winy + xw.cyo + 2 * dc.font.ascent / 3, width, 1);
     }
 
     /* Reset clip to none. */
