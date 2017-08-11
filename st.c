@@ -3118,7 +3118,8 @@ int xloadfont(Font *f, FcPattern *pattern) {
     FcConfigSubstitute(NULL, configured, FcMatchPattern);
     XftDefaultSubstitute(xw.dpy, xw.scr, configured);
 
-    match = FcFontMatch(NULL, configured, &result);
+    /* match = FcFontMatch(NULL, configured, &result); */
+    match = XftFontMatch(xw.dpy, xw.scr, pattern, &result);
     if (!match) {
         FcPatternDestroy(configured);
         return 1;
@@ -3503,8 +3504,8 @@ int xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, i
             FcPatternAddCharSet(fcpattern, FC_CHARSET, fccharset);
             FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
 
-            FcConfigSubstitute(0, fcpattern, FcMatchPattern);
-            FcDefaultSubstitute(fcpattern);
+            /* FcConfigSubstitute(0, fcpattern, FcMatchPattern); */
+            /* FcDefaultSubstitute(fcpattern); */
 
             fontpattern = FcFontSetMatch(0, fcsets, 1, fcpattern, &fcres);
 
