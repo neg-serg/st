@@ -4140,8 +4140,7 @@ copyurl(const Arg *arg) {
     free(linestr);
 }
 
-// TODO: https://github.com/dcat/st-xresources/issues/1
-void config_init(void) {
+void xrdb_load(void) {
 #define XRESOURCE_LOAD_STRING(NAME, DST)                  \
     XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
     if (ret.addr != NULL && !strncmp("String", type, 64)) \
@@ -4199,7 +4198,7 @@ void config_init(void) {
 }
 
 void reload(int sig) {
-	config_init();
+	xrdb_load();
  	xloadcols();
 	xloadfonts(font, 0);
 
@@ -4259,7 +4258,7 @@ run:
     }
     setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
-    config_init();
+    xrdb_load();
     signal(SIGUSR1, reload);
 #ifdef VIM_VERSION
     setenv("ST_TERM","TRUE",1);
