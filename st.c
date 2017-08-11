@@ -2219,6 +2219,9 @@ void csihandle(void) {
             DEFAULT(csiescseq.arg[0], 1);
             tdeletechar(csiescseq.arg[0]);
             break;
+        case 'z': /* print the prompt_char variable */
+            tputc(prompt_char);
+        break;
         case 'Z': /* CBT -- Cursor Backward Tabulation <n> tab stops */
             DEFAULT(csiescseq.arg[0], 1);
             tputtab(-csiescseq.arg[0]);
@@ -4159,6 +4162,11 @@ void xrdb_load(void) {
 	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret)) \
 		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);   \
 	if (ret.addr != NULL && !strncmp("String", type, 64))
+ 		DST = ret.addr;
+
+#define XRESOURCE_LOAD_CHAR(NAME, DST) \
+	XRESOURCE_LOAD_META(NAME)            \
+		DST = ret.addr[0];
 
 #define XRESOURCE_LOAD_STRING(NAME, DST) \
 	XRESOURCE_LOAD_META(NAME)            \
@@ -4228,8 +4236,11 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_INTEGER("cursorthickness", cursorthickness);
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("chscale", chscale);
+
         XRESOURCE_LOAD_INTEGER("bold_font", bold_font);
  		XRESOURCE_LOAD_INTEGER("borderpx", borderpx);
+
+		XRESOURCE_LOAD_CHAR("prompt_char", prompt_char);
     }
 	XFlush(dpy);
 }
