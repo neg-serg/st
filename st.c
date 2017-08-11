@@ -3649,7 +3649,7 @@ void xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int
 
     /* Render underline and strikethrough. */
     if (base.mode & ATTR_UNDERLINE) {
-		XftDrawRect(xw.draw, fg, winx, winy + xw.cyo + dc.font.ascent + 1, width, 1);
+        XftDrawRect(xw.draw, fg, winx, winy + xw.cyo + dc.font.ascent + 1, width, 1);
     }
 
     if (base.mode & ATTR_STRUCK) {
@@ -4138,8 +4138,8 @@ copyurl(const Arg *arg) {
     free(linestr);
 }
 
+// TODO: https://github.com/dcat/st-xresources/issues/1
 void config_init(void) {
-
 #define XRESOURCE_LOAD_STRING(NAME, DST)                  \
     XrmGetResource(db, NAME, "String", &type, &ret);      \
     if (ret.addr != NULL && !strncmp("String", type, 64)) \
@@ -4177,7 +4177,6 @@ void config_init(void) {
         XRESOURCE_LOAD_STRING("st.background", colorname[257]);
         XRESOURCE_LOAD_STRING("st.foreground", colorname[256]);
         XRESOURCE_LOAD_STRING("st.cursorColor", colorname[258]);
-        /* XRESOURCE_LOAD_STRING("st.termname", termname); */
         XRESOURCE_LOAD_STRING("st.font", font);
         XRESOURCE_LOAD_STRING("st.shell", shell);
         XRESOURCE_LOAD_INTEGER("st.xfps", xfps);
@@ -4187,6 +4186,8 @@ void config_init(void) {
         XRESOURCE_LOAD_INTEGER("st.tabspaces", tabspaces);
         XRESOURCE_LOAD_FLOAT("st.cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("st.chscale", chscale);
+        // todo: figure out how to disable bold fonts.
+        //XRESOURCE_LOAD_INTEGER("st.bold_font", bold_font);
     }
 }
 
