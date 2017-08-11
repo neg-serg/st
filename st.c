@@ -200,6 +200,8 @@ enum selection_type { SEL_REGULAR = 1, SEL_RECTANGULAR = 2 };
 
 enum selection_snap { SNAP_WORD = 1, SNAP_LINE = 2 };
 
+int cursorblinkstate = 0;
+
 typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
@@ -3696,6 +3698,7 @@ void xdrawcursor(void) {
     int ena_sel = sel.ob.x != -1 && sel.alt == IS_SET(MODE_ALTSCREEN);
 
     Color drawcol;
+    int cursorshouldblink = xw.cursor % 2;
 
     LIMIT(oldx, 0, term.col - 1);
     LIMIT(oldy, 0, term.row - 1);
@@ -3735,13 +3738,27 @@ void xdrawcursor(void) {
         }
     }
 
-    if (IS_SET(MODE_HIDE)) return;
+	if (IS_SET(MODE_HIDE) || (
+			cursorshouldblink && !cursorblinkstyle && cursorblinkstate && (
+				xw.state & WIN_FOCUSED
+			)
+		)
+	) return;
 
     /* draw the new one */
-    if (xw.state & WIN_FOCUSED) {
+	if ((
+		xw.state & WIN_FOCUSED
+	) && (
+		(cursorshouldblink == 0) ||
+		((!cursorblinkstyle && 1) || cursorblinkstate)
+	)) {
+	/* draw normal cursor */
         switch (xw.cursor) {
+            case 9:
+            case 8:
             case 7: /* st extension: snowman */
-                utf8decode("☃", &g.u, UTF_SIZ);
+                utf8decode(xw.cursor > 7 ? "🐱" : "☃", &g.u, UTF_SIZ);
+                //utf8decode("☃", &g.u, UTF_SIZ);
             case 0: /* Blinking Block */
             case 1: /* Blinking Block (Default) */
             case 2: /* Steady Block */
@@ -3762,6 +3779,7 @@ void xdrawcursor(void) {
                 break;
         }
     } else {
+    	/* draw only cursor border: */
         XftDrawRect(xw.draw, &drawcol, borderpx + curx * xw.cw, borderpx + term.c.y * xw.ch, xw.cw - 1, 1);
         XftDrawRect(xw.draw, &drawcol, borderpx + curx * xw.cw, borderpx + term.c.y * xw.ch, 1, xw.ch - 1);
         XftDrawRect(xw.draw, &drawcol, borderpx + (curx + 1) * xw.cw - 1, borderpx + term.c.y * xw.ch, 1, xw.ch - 1);
@@ -4032,7 +4050,7 @@ void run(void) {
         if (FD_ISSET(cmdfd, &rfd)) {
             ttyread();
             if (blinktimeout) {
-                blinkset = tattrset(ATTR_BLINK);
+				blinkset = tattrset(ATTR_BLINK) || (xw.cursor % 2);
                 if (!blinkset) MODBIT(term.mode, 0, MODE_BLINK);
             }
         }
@@ -4046,10 +4064,15 @@ void run(void) {
 
         dodraw = 0;
         if (blinktimeout && TIMEDIFF(now, lastblink) > blinktimeout) {
+			/*@TODO: use separate blink timeout
+			 * for cursor_show and cursor_hide states ?? */
             tsetdirtattr(ATTR_BLINK);
             term.mode ^= MODE_BLINK;
             lastblink = now;
             dodraw = 1;
+			if (!cursorblinkontype) {
+				cursorblinkstate = !cursorblinkstate;
+			}
         }
         deltatime = TIMEDIFF(now, last);
         if(deltatime > 1000 / (xev ? xfps : actionfps)) {
@@ -4065,6 +4088,9 @@ void run(void) {
             }
 
             draw();
+			if (cursorblinkontype) {
+				cursorblinkstate = !cursorblinkstate;
+			}
             XFlush(xw.dpy);
 
             if (xev && !FD_ISSET(xfd, &rfd)) xev--;
@@ -4237,6 +4263,10 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_INTEGER("cursorthickness", cursorthickness);
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("chscale", chscale);
+
+		cursorblinkstate = 1; // in case if cursor shape was changed from a blinking one to a non-blinking
+		XRESOURCE_LOAD_INTEGER("cursorblinkstyle", cursorblinkstyle);
+		XRESOURCE_LOAD_INTEGER("cursorblinkontype", cursorblinkontype);
 
 		if (!xrdb_overrides_alpha){
 			XRESOURCE_LOAD_INTEGER("opacity", alpha);

@@ -55,17 +55,6 @@ static unsigned int xfps = 150;
 static unsigned int actionfps = 60;
 
 /*
- * blinking timeout (set to 0 to disable blinking) for the terminal blinking
- * attribute.
- */
-static unsigned int blinktimeout = 800;
-
-/*
- * thickness of underline and bar cursors
- */
-static unsigned int cursorthickness = 2;
-
-/*
  * bell volume. It must be a value between -100 and 100. Use 0 for disabling
  * it
  */
@@ -172,6 +161,21 @@ static unsigned int defaultrcs = 257;
 
 // 2 4 6 7: █ _ | ☃
 static unsigned int cursorshape = 2;
+
+// 0: normal blinking
+// 1: leave cursor border and blink with cursor's background
+static unsigned int cursorblinkstyle = 0;
+
+// 0: cursor blinks with a constant interval
+// 1: blinking cycle resets on key input
+static unsigned int cursorblinkontype = 1;
+
+// thickness of underline and bar cursors
+static unsigned int cursorthickness = 2;
+
+// blinking timeout for terminal and cursor blinking (0 disables)
+static unsigned int blinktimeout = 800;
+
 static unsigned int defaultfg = 256;
 static unsigned int defaultbg = 257;
 static unsigned int defaultcs = 258;
