@@ -4087,15 +4087,14 @@ void run(void) {
 }
 
 void usage(void) {
-    die("%s " VERSION
-        " (c) 2010-2016 st engineers\n"
-        "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-        "          [-i] [-t title] [-T title] [-w windowid] [-e command ...]"
-        " [command ...]\n"
-        "       st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-        "          [-i] [-t title] [-T title] [-w windowid] -l line"
-        " [stty_args ...]\n",
-        argv0);
+	die("usage: %s [-aiv] [-A alpha] [-c class] [-f font] [-g geometry]"
+	    " [-n name]\n"
+	    "          [-o file] [-T title] [-t title] [-w windowid]\n"
+	    "          [[-e] command [args ...]]\n"
+	    "       %s [-aiv] [-A alpha] [-c class] [-f font] [-g geometry]"
+	    " [-n name]\n"
+	    "          [-o file] [-T title] [-t title] [-w windowid]\n"
+		"          -l line [stty_args ...]\n", argv0, argv0);
 }
 
 
@@ -4179,6 +4178,9 @@ void xrdb_load(void) {
 	XRESOURCE_LOAD_META(NAME)           \
 		DST = strtof(ret.addr, NULL);
 
+    /* change it to struct if more overrides will be needed */
+    static int xrdb_overrides_alpha = 0;
+
 	// to consider: separating out all xresources with colors/font, as that's all that would be reloaded.
 	char *xrm;
     char *type;
@@ -4236,7 +4238,9 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("chscale", chscale);
 
-        XRESOURCE_LOAD_INTEGER("opacity", alpha);
+		if (!xrdb_overrides_alpha){
+			XRESOURCE_LOAD_INTEGER("opacity", alpha);
+		}
 
         XRESOURCE_LOAD_INTEGER("bold_font", bold_font);
  		XRESOURCE_LOAD_INTEGER("borderpx", borderpx);
@@ -4271,6 +4275,10 @@ int main(int argc, char *argv[]) {
     ARGBEGIN {
         case 'a':
             allowaltscreen = 0;
+            break;
+        case 'A':
+            alpha = atoi(EARGF(usage()));
+            xrdb_overrides_alpha = 1;
             break;
         case 'c':
             opt_class = EARGF(usage());

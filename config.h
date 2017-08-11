@@ -163,7 +163,9 @@ static const char *colorname[] = {
 };
 
 /* bg opacity */
-static const int alpha = 0xdd;
+static int alpha = 0xdd;
+
+static int xrdb_overrides_alpha = 0;
 
 // fg, bg, cursor, reverse cursor (refereces colorname indexes)
 static unsigned int defaultrcs = 257;
