@@ -4142,23 +4142,21 @@ copyurl(const Arg *arg) {
 
 void xrdb_load(void) {
 
-// TODO: these are redundant.
-#define XRESOURCE_LOAD_STRING(NAME, DST)                           \
+#define XRESOURCE_LOAD_META(NAME, DST)                             \
 	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret)) \
 		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);   \
-	if (ret.addr != NULL && !strncmp("String", type, 64))          \
+	if (ret.addr != NULL && !strncmp("String", type, 64))
+
+#define XRESOURCE_LOAD_STRING(NAME, DST) \
+	XRESOURCE_LOAD_META(NAME, DST)       \
         DST = ret.addr;
 
-#define XRESOURCE_LOAD_INTEGER(NAME, DST)                          \
-	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret)) \
-		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);   \
-	if (ret.addr != NULL && !strncmp("String", type, 64))          \
+#define XRESOURCE_LOAD_INTEGER(NAME, DST) \
+	XRESOURCE_LOAD_META(NAME, DST)        \
         DST = strtoul(ret.addr, NULL, 10);
 
-#define XRESOURCE_LOAD_FLOAT(NAME, DST)                             \
-	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret))  \
-		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);    \
-	if (ret.addr != NULL && !strncmp("String", type, 64))           \
+#define XRESOURCE_LOAD_FLOAT(NAME, DST) \
+	XRESOURCE_LOAD_META(NAME, DST)      \
         DST = strtof(ret.addr, NULL);
 
 	// to consider: separating out all xresources with colors/font, as that's all that would be reloaded.
