@@ -4214,8 +4214,8 @@ void reload(int sig) {
 	cresize(xw.w, xw.h);
 	ttyresize();
 
-	// force redraw
-	redraw(); redraw();
+	// triggers re-render if we're visible.
+	ttywrite("\033[O", 3);
 
 	signal(SIGUSR1, reload);
 }
