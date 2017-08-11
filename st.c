@@ -4224,7 +4224,6 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_INTEGER("actionfps", actionfps);
         XRESOURCE_LOAD_INTEGER("blinktimeout", blinktimeout);
         XRESOURCE_LOAD_INTEGER("bellvolume", bellvolume);
-        XRESOURCE_LOAD_INTEGER("tabspaces", tabspaces);
         XRESOURCE_LOAD_INTEGER("cursorshape", xw.cursor);
         XRESOURCE_LOAD_INTEGER("cursorthickness", cursorthickness);
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
@@ -4241,12 +4240,6 @@ void reload(int sig) {
 	// colors, fonts
  	xloadcols();
 	xloadfonts(font, 0);
-
-	// tabs
-	int i=0;
-	memset(term.tabs, 0, term.col * sizeof(*term.tabs));
-	for (i = tabspaces; i < term.col; i += tabspaces)
-		term.tabs[i] = 1;
 
 	// pretend the window just got resized
 	cresize(xw.w, xw.h);
