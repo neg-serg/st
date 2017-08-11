@@ -12,7 +12,7 @@ static int borderpx = 0;
 static int bold_font = 1;
 // exec precedence: -e arg, utmp option, SHELL env var, /etc/passwd shell, config.h value.
 // (we override with xresources on start)
-static char *shell = "/bin/zsh";
+static char *shell = "/bin/dash";
 static char *utmp = NULL;
 static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
@@ -66,6 +66,7 @@ static int bellvolume = 0;
 
 /* TERM value */
 static char termname[] = "st-256color";
+/* static char termname[] = "xterm-256color"; */
 
 /* spaces per tab
  *
