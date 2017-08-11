@@ -4236,6 +4236,8 @@ void xrdb_load(void) {
         XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("chscale", chscale);
 
+        XRESOURCE_LOAD_INTEGER("opacity", alpha);
+
         XRESOURCE_LOAD_INTEGER("bold_font", bold_font);
  		XRESOURCE_LOAD_INTEGER("borderpx", borderpx);
 
