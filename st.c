@@ -2188,6 +2188,13 @@ void csihandle(void) {
             DEFAULT(csiescseq.arg[0], 1);
             tscrollup(term.top, csiescseq.arg[0]);
             break;
+        case 't': /* report window pixel size */
+            if (csiescseq.arg[0] == 14) {
+                len = snprintf(buf, sizeof(buf),"\x1B[4;%i;%it;",
+                               xw.h, xw.w);
+                ttywrite(buf, len);
+            }
+            break;
         case 'T': /* SD -- Scroll <n> line down */
             DEFAULT(csiescseq.arg[0], 1);
             tscrolldown(term.top, csiescseq.arg[0]);
