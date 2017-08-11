@@ -4141,19 +4141,24 @@ copyurl(const Arg *arg) {
 }
 
 void xrdb_load(void) {
-#define XRESOURCE_LOAD_STRING(NAME, DST)                  \
-    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
-    if (ret.addr != NULL && !strncmp("String", type, 64)) \
+
+// TODO: these are redundant.
+#define XRESOURCE_LOAD_STRING(NAME, DST)                           \
+	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret)) \
+		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);   \
+	if (ret.addr != NULL && !strncmp("String", type, 64))          \
         DST = ret.addr;
 
-#define XRESOURCE_LOAD_INTEGER(NAME, DST)                 \
-    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
-    if (ret.addr != NULL && !strncmp("String", type, 64)) \
+#define XRESOURCE_LOAD_INTEGER(NAME, DST)                          \
+	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret)) \
+		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);   \
+	if (ret.addr != NULL && !strncmp("String", type, 64))          \
         DST = strtoul(ret.addr, NULL, 10);
 
-#define XRESOURCE_LOAD_FLOAT(NAME, DST)                   \
-    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
-    if (ret.addr != NULL && !strncmp("String", type, 64)) \
+#define XRESOURCE_LOAD_FLOAT(NAME, DST)                             \
+	if(!XrmGetResource(xrdb, "st." NAME, "st." NAME, &type, &ret))  \
+		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);    \
+	if (ret.addr != NULL && !strncmp("String", type, 64))           \
         DST = strtof(ret.addr, NULL);
 
 	// to consider: separating out all xresources with colors/font, as that's all that would be reloaded.
@@ -4179,31 +4184,37 @@ void xrdb_load(void) {
             if (ret.addr != NULL && !strncmp("String", type, 64)) \
                 colorname[i] = ret.addr;
         }
-        XRESOURCE_LOAD_STRING("st.background", colorname[257]);
-        XRESOURCE_LOAD_STRING("st.foreground", colorname[256]);
-        XRESOURCE_LOAD_STRING("st.cursorColor", colorname[258]);
-        XRESOURCE_LOAD_STRING("st.font", font);
-        XRESOURCE_LOAD_STRING("st.shell", shell);
-        XRESOURCE_LOAD_INTEGER("st.xfps", xfps);
-        XRESOURCE_LOAD_INTEGER("st.actionfps", actionfps);
-        XRESOURCE_LOAD_INTEGER("st.blinktimeout", blinktimeout);
-        XRESOURCE_LOAD_INTEGER("st.bellvolume", bellvolume);
-        XRESOURCE_LOAD_INTEGER("st.tabspaces", tabspaces);
-        XRESOURCE_LOAD_FLOAT("st.cwscale", cwscale);
-        XRESOURCE_LOAD_FLOAT("st.chscale", chscale);
-        XRESOURCE_LOAD_INTEGER("st.bold_font", bold_font);
- 		XRESOURCE_LOAD_INTEGER("st.borderpx", borderpx);
+        XRESOURCE_LOAD_STRING("background", colorname[257]);
+        XRESOURCE_LOAD_STRING("foreground", colorname[256]);
+        XRESOURCE_LOAD_STRING("cursorColor", colorname[258]);
+        XRESOURCE_LOAD_STRING("font", font);
+        XRESOURCE_LOAD_STRING("shell", shell);
+        XRESOURCE_LOAD_INTEGER("xfps", xfps);
+        XRESOURCE_LOAD_INTEGER("actionfps", actionfps);
+        XRESOURCE_LOAD_INTEGER("blinktimeout", blinktimeout);
+        XRESOURCE_LOAD_INTEGER("bellvolume", bellvolume);
+        XRESOURCE_LOAD_INTEGER("tabspaces", tabspaces);
+        XRESOURCE_LOAD_FLOAT("cwscale", cwscale);
+        XRESOURCE_LOAD_FLOAT("chscale", chscale);
+        XRESOURCE_LOAD_INTEGER("bold_font", bold_font);
+ 		XRESOURCE_LOAD_INTEGER("borderpx", borderpx);
     }
 	XFlush(dpy);
 }
 
 void reload(int sig) {
 	xrdb_load();
+
+	// colors, fonts
  	xloadcols();
 	xloadfonts(font, 0);
 
+	// pretend the window just got resized
 	cresize(xw.w, xw.h);
 	ttyresize();
+
+	// force redraw
+	redraw(); redraw();
 
 	signal(SIGUSR1, reload);
 }
