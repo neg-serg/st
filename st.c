@@ -4202,8 +4202,9 @@ void reload(int sig) {
  	xloadcols();
 	xloadfonts(font, 0);
 
-	// called twice intentionally (else doesn't take effect until window is focused)
-	redraw(); redraw();
+	cresize(xw.w, xw.h);
+	ttyresize();
+
 	signal(SIGUSR1, reload);
 }
 
