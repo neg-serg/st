@@ -1,4 +1,5 @@
 /* See LICENSE file for copyright and license details. */
+// ref: http://freedesktop.org/software/fontconfig/fontconfig-user.html
 
 #define VIM_VERSION 1
 #define ST_BRIGHT 1
@@ -9,6 +10,8 @@
 #endif
 static int borderpx = 0;
 static int bold_font = 1;
+// exec precedence: -e arg, utmp option, SHELL env var, /etc/passwd shell, config.h value.
+// (we override with xresources on start)
 static char *shell = "/bin/zsh";
 static char *utmp = NULL;
 static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
@@ -154,37 +157,25 @@ static const char *colorname[] = {
 /* bg opacity */
 static const int alpha = 0xdd;
 
-/*
- * Default colors (colorname index)
- * foreground, background, cursor, reverse cursor
- */
+// fg, bg, cursor, reverse cursor (refereces colorname indexes)
 static unsigned int defaultrcs = 257;
 
-/*
- * Default shape of cursor
- * 2: Block ("█")
- * 4: Underline ("_")
- * 6: Bar ("|")
- * 7: Snowman ("☃")
- */
+// 2 4 6 7: █ _ | ☃
 static unsigned int cursorshape = 2;
 static unsigned int defaultfg = 256;
 static unsigned int defaultbg = 257;
 static unsigned int defaultcs = 258;
 
-/* Default colour and shape of the mouse cursor */
+// mouse
 static unsigned int mouseshape = XC_xterm;
 static unsigned int mousefg = 7;
 static unsigned int mousebg = 0;
 
-/*
- * Color used to display font attributes when fontconfig selected a font which
- * doesn't match the ones requested.
- */
+// Colors used when the specific fg == defaultfg.
 static unsigned int defaultattr = 11;
 
-/* Internal mouse shortcuts. */
-/* Beware that overloading Button1 will disable the selection. */
+// Internal mouse shortcuts.
+// Beware that overloading Button1 will disable the selection.
 static MouseShortcut mshortcuts[] = {
 	/* button               mask            string */
 	{ Button4,              XK_ANY_MOD,     "\031" },
@@ -460,13 +451,6 @@ static Key key[] = {
 	{ XK_F35,           XK_NO_MOD,      "\033[23;5~",    0,    0,    0},
 };
 
-/*
- * Selection types' masks.
- * Use the same masks as usual.
- * Button1Mask is always unset, to make masks match between ButtonPress.
- * ButtonRelease and MotionNotify.
- * If no match is found, regular selection is used.
- */
 static uint selmasks[] = {
 	[SEL_RECTANGULAR] = Mod1Mask,
 };
