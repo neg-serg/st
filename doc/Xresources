@@ -29,6 +29,9 @@ st.tabspaces:       8
 st.blinktimeout:    800
 st.bellvolume:      100
 
+! this is a char that is exposed like so: `printf '\033[z'`
+st.prompt_char:  $
+
 st.color0:          #353540
 st.color8:          #545466
 st.color1:          #8c5760
