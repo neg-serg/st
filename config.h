@@ -13,8 +13,8 @@ static int bold_font = 1;
 // exec precedence: -e arg, utmp option, SHELL env var, /etc/passwd shell, config.h value.
 // if the shell in config/xresources starts with '/' (denoting path), it will take priority.
 // (we override with xresources on start)
-// static char *shell = " ";
-static char *shell = "/bin/dash";
+static char *shell = " ";
+//static char *shell = "/bin/dash";
 
 static char *utmp = NULL;
 static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
