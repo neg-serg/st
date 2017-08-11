@@ -3221,8 +3221,10 @@ void xloadfonts(char *fontstr, double fontsize) {
     FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
     if (xloadfont(&dc.ifont, pattern)) die("st: can't open font %s\n", fontstr);
 
-    FcPatternDel(pattern, FC_WEIGHT);
-    FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
+    if(bold_font){
+        FcPatternDel(pattern, FC_WEIGHT);
+        FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
+    }
     if (xloadfont(&dc.ibfont, pattern))
         die("st: can't open font %s\n", fontstr);
 
@@ -4141,36 +4143,40 @@ copyurl(const Arg *arg) {
 // TODO: https://github.com/dcat/st-xresources/issues/1
 void config_init(void) {
 #define XRESOURCE_LOAD_STRING(NAME, DST)                  \
-    XrmGetResource(db, NAME, "String", &type, &ret);      \
+    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
     if (ret.addr != NULL && !strncmp("String", type, 64)) \
         DST = ret.addr;
 
 #define XRESOURCE_LOAD_INTEGER(NAME, DST)                 \
-    XrmGetResource(db, NAME, "String", &type, &ret);      \
+    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
     if (ret.addr != NULL && !strncmp("String", type, 64)) \
         DST = strtoul(ret.addr, NULL, 10);
 
 #define XRESOURCE_LOAD_FLOAT(NAME, DST)                   \
-    XrmGetResource(db, NAME, "String", &type, &ret);      \
+    XrmGetResource(xrdb, NAME, "String", &type, &ret);      \
     if (ret.addr != NULL && !strncmp("String", type, 64)) \
         DST = strtof(ret.addr, NULL);
 
-    if(!(xw.dpy = XOpenDisplay(NULL)))
-        die("Can't open display\n");
-
-    char *resm;
+	// to consider: separating out all xresources with colors/font, as that's all that would be reloaded.
+	char *xrm;
     char *type;
-    XrmDatabase db;
+    XrmDatabase xrdb;
     XrmValue ret;
 
+	Display *dpy;
+
+	if(!(dpy = XOpenDisplay(NULL))){
+		die("Can't open display\n");
+	}
+
     XrmInitialize();
-    resm = XResourceManagerString(xw.dpy);
-    if (resm != NULL) {
-        db = XrmGetStringDatabase(resm);
+    xrm = XResourceManagerString(dpy);
+    if (xrm != NULL) {
+        xrdb = XrmGetStringDatabase(xrm);
         char xres_str[80];
         for (int i = 1; i < 256; i++){
             sprintf(xres_str, "%s%d","st.color",i);
-            XrmGetResource(db, xres_str, "String", &type, &ret);      \
+            XrmGetResource(xrdb, xres_str, "String", &type, &ret);      \
             if (ret.addr != NULL && !strncmp("String", type, 64)) \
                 colorname[i] = ret.addr;
         }
@@ -4186,9 +4192,20 @@ void config_init(void) {
         XRESOURCE_LOAD_INTEGER("st.tabspaces", tabspaces);
         XRESOURCE_LOAD_FLOAT("st.cwscale", cwscale);
         XRESOURCE_LOAD_FLOAT("st.chscale", chscale);
-        // todo: figure out how to disable bold fonts.
-        //XRESOURCE_LOAD_INTEGER("st.bold_font", bold_font);
+        XRESOURCE_LOAD_INTEGER("st.bold_font", bold_font);
+ 		XRESOURCE_LOAD_INTEGER("st.borderpx", borderpx);
     }
+	XFlush(dpy);
+}
+
+void reload(int sig) {
+	config_init();
+ 	xloadcols();
+	xloadfonts(font, 0);
+
+	// called twice intentionally (else doesn't take effect until window is focused)
+	redraw(); redraw();
+	signal(SIGUSR1, reload);
 }
 
 int main(int argc, char *argv[]) {
@@ -4243,6 +4260,7 @@ run:
     setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
     config_init();
+    signal(SIGUSR1, reload);
 #ifdef VIM_VERSION
     setenv("ST_TERM","TRUE",1);
 #endif

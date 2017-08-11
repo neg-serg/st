@@ -8,6 +8,7 @@
     static char *font = "PragmataPro for Powerline:size=17:antialias=true:autohint=true";
 #endif
 static int borderpx = 0;
+static int bold_font = 1;
 static char *shell = "/bin/zsh";
 static char *utmp = NULL;
 static char stty_args[] = "stty raw pass8 nl -echo -iexten -cstopb 38400";
