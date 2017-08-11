@@ -1167,6 +1167,8 @@ void xsetsel(char *str, Time t) {
     sel.primary = str;
     XSetSelectionOwner(xw.dpy, XA_PRIMARY, xw.win, t);
     if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win) selclear(0);
+
+    clipcopy(NULL);
 }
 
 void brelease(XEvent *e) {
