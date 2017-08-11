@@ -4,13 +4,12 @@
 ! These options only take effect on startup.
 st.termname:        xterm-256color
 st.shell:           /bin/dash
-st.tabspaces:       4
 
-
-! These options can be reloaded live.
+! The following options options can be reloaded via USR1 signal.
 st.font:            PragmataPro for Powerline:size=17
 st.bold_font:       1
 st.borderpx:        10
+st.tabspaces:      4
 
 st.background:      #131415
 st.foreground:      #A3BAD0
@@ -18,6 +17,9 @@ st.cursorColor:     #8d9b53
 
 st.chscale:         1.0
 st.cwscale:         1.0
+
+! Available cursor values: 2 4 6 7 = █ _ | ☃
+st.cursorshape:     2
 st.xfps:            120
 st.actionfps:       30
 st.tabspaces:       8

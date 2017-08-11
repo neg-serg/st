@@ -4235,6 +4235,12 @@ void reload(int sig) {
  	xloadcols();
 	xloadfonts(font, 0);
 
+	// tabs
+	int i=0;
+	memset(term.tabs, 0, term.col * sizeof(*term.tabs));
+	for (i = tabspaces; i < term.col; i += tabspaces)
+		term.tabs[i] = 1;
+
 	// pretend the window just got resized
 	cresize(xw.w, xw.h);
 	ttyresize();
