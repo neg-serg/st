@@ -1235,11 +1235,13 @@ void execsh(void) {
             die("who are you?\n");
     }
 
-    if (NULL == (sh = getenv("SHELL")))
+    if ((sh = getenv("SHELL")) == NULL){
         sh = (pw->pw_shell[0]) ? pw->pw_shell : shell;
+    }
 
-	if (shell[0] == '/')
+	if (shell[0] == '\0'){
 		sh = shell;
+	}
 
     if (opt_cmd)
         prog = opt_cmd[0];
