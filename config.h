@@ -13,7 +13,8 @@ static int bold_font = 1;
 // exec precedence: -e arg, utmp option, SHELL env var, /etc/passwd shell, config.h value.
 // if the shell in config/xresources starts with '/' (denoting path), it will take priority.
 // (we override with xresources on start)
-static char *shell = "\0";
+static char *shell = "/bin/dash";
+//static char *shell = "/bin/zsh";
 //static char *shell = "/bin/dash";
 
 /* set a char which can be printed with esc code \033[z */
