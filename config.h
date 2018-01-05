@@ -210,7 +210,6 @@ static Shortcut shortcuts[] = {
 	{ MODKEY4|ShiftMask,      XK_Next,        xzoom,          {.f = -1} },
 	{ MODKEY4|ShiftMask,      XK_Home,        xzoomreset,     {.f =  0} },
 	{ ShiftMask,              XK_Insert,      selpaste,       {.i =  0} },
-	{ MODKEY4|ShiftMask,      XK_P,           externalpipe,   {.v = "xurls|rofi -p 'url> ' -dmenu -l 4 | xclip" } },
 	{ MODKEY4|ShiftMask,      XK_F,           externalpipe,   {.v = "xurls|rofi -p 'url> ' -dmenu -l 4 | xclip" } },
     { ControlMask|ShiftMask,  XK_C,           clipcopy,       {.i =  0} },
     { ControlMask|ShiftMask,  XK_U,           copyurl,        {.i =  0} },
