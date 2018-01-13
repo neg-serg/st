@@ -150,7 +150,7 @@ static const char *colorname[] = {
 };
 
 /* bg opacity */
-static int alpha = 0xdd;
+static int alpha = 0xe4;
 
 static int xrdb_overrides_alpha = 0;
 
