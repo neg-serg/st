@@ -106,7 +106,7 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 0.8;
+float alpha = 0.88;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -414,8 +414,8 @@ static Key key[] = {
 	{ XK_KP_End,        XK_ANY_MOD,     "\033[4~",       0,    0},
 	{ XK_KP_Next,       ShiftMask,      "\033[6;2~",     0,    0},
 	{ XK_KP_Next,       XK_ANY_MOD,     "\033[6~",       0,    0},
-	{ XK_KP_Insert,     ShiftMask,      "\033[2;2~",    +1,    0},
-	{ XK_KP_Insert,     ShiftMask,      "\033[4l",      -1,    0},
+	{ XK_KP_Insert,     XK_ANY_MOD,      "\033[2;2~",    +1,    0},
+	{ XK_KP_Insert,     XK_ANY_MOD,      "\033[4l",      -1,    0},
 	{ XK_KP_Insert,     ControlMask,    "\033[L",       -1,    0},
 	{ XK_KP_Insert,     ControlMask,    "\033[2;5~",    +1,    0},
 	{ XK_KP_Insert,     XK_ANY_MOD,     "\033[4h",      -1,    0},
