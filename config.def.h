@@ -16,7 +16,7 @@ static int borderpx = 2;
  * 4: value of shell in /etc/passwd
  * 5: value of shell in config.h
  */
-static char *shell = "/bin/sh";
+static char *shell = "/bin/dash";
 char *utmp = NULL;
 /* scroll program: to enable use a string like "scroll" */
 char *scroll = NULL;
@@ -243,6 +243,8 @@ static const char *colorname[] = {
 	/* more colors can be added after 255 to use with DefaultXX */
 	"#cccccc",
 	"#555555",
+	"#6C7E96", /* foreground */
+	"#375BC1", /* cursor */
 };
 
 
@@ -250,10 +252,10 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 7;
+unsigned int defaultfg = 258;
 unsigned int defaultbg = 0;
-static unsigned int defaultcs = 256;
-static unsigned int defaultrcs = 257;
+static unsigned int defaultcs = 259;
+static unsigned int defaultrcs = 259;
 
 /*
  * Default shape of cursor
@@ -457,8 +459,8 @@ static Key key[] = {
 	{ XK_ISO_Left_Tab,  ShiftMask,      "\033[Z",        0,    0},
 	{ XK_Return,        Mod1Mask,       "\033\r",        0,    0},
 	{ XK_Return,        XK_ANY_MOD,     "\r",            0,    0},
-	{ XK_Insert,        ShiftMask,      "\033[4l",      -1,    0},
-	{ XK_Insert,        ShiftMask,      "\033[2;2~",    +1,    0},
+	{ XK_Insert,        XK_ANY_MOD,     "\033[4l",      -1,    0},
+	{ XK_Insert,        XK_ANY_MOD,     "\033[2;2~",    +1,    0},
 	{ XK_Insert,        ControlMask,    "\033[L",       -1,    0},
 	{ XK_Insert,        ControlMask,    "\033[2;5~",    +1,    0},
 	{ XK_Insert,        XK_ANY_MOD,     "\033[4h",      -1,    0},
