@@ -757,6 +757,10 @@ xloadcolor(int i, const char *name, Color *ncolor)
 
 	if (!name) {
 		if (BETWEEN(i, 16, 255)) { /* 256 color */
+			if (colorname[i]) {
+				name = colorname[i];
+				return XftColorAllocName(xw.dpy, xw.vis, xw.cmap, name, ncolor);
+			}
 			if (i < 6*6*6+16) { /* same colors as xterm */
 				color.red   = sixd_to_16bit( ((i-16)/36)%6 );
 				color.green = sixd_to_16bit( ((i-16)/6) %6 );
