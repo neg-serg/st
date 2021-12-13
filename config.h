@@ -12,6 +12,7 @@ static char *font2[] = {
 /*	"Hack Nerd Font Mono:pixelsize=11:antialias=true:autohint=true", */
 };
 static int borderpx = 2;
+static int borderperc = 60;
 
 /*
  * What program is execed by st depends of these precedence rules:
