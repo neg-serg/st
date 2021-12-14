@@ -111,6 +111,7 @@ int selected(int, int);
 char *getsel(void);
 
 size_t utf8encode(Rune, char *);
+int trt_kbdselect(KeySym, char *, int);
 
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
