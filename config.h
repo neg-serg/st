@@ -5,10 +5,10 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Iosevka:size=33";
+static char *font = "Iosevka:style=Medium:antialias=false:autohint=false:size=19";
 /* Spare fonts */
 static char *font2[] = {
-    "Code2000:size=33"
+    "Code2000:size=19"
 };
 static int borderpx = 2;
 static int borderperc = 60;
